@@ -1,0 +1,122 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+type Row = { id: string; quote: string; author: string; sort_order: number };
+
+export default function TestimonialManager() {
+  const [rows, setRows] = useState<Row[]>([]);
+  const [newQuote, setNewQuote] = useState("");
+  const [newAuthor, setNewAuthor] = useState("");
+  const [saving, setSaving] = useState(false);
+  const supabase = createClient();
+
+  async function load() {
+    const { data } = await supabase
+      .from("testimonials")
+      .select("id, quote, author, sort_order")
+      .order("sort_order", { ascending: true });
+    setRows((data as Row[]) ?? []);
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function addTestimonial() {
+    if (!newQuote.trim()) return;
+    setSaving(true);
+    await supabase.from("testimonials").insert({
+      quote: newQuote,
+      author: newAuthor,
+      sort_order: rows.length,
+    });
+    setNewQuote("");
+    setNewAuthor("");
+    setSaving(false);
+    await load();
+  }
+
+  async function updateRow(row: Row) {
+    await supabase
+      .from("testimonials")
+      .update({ quote: row.quote, author: row.author })
+      .eq("id", row.id);
+  }
+
+  async function deleteRow(id: string) {
+    await supabase.from("testimonials").delete().eq("id", id);
+    await load();
+  }
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-3 border border-mist p-5">
+        <p className="text-sm text-stone">הוספת המלצה חדשה</p>
+        <textarea
+          rows={2}
+          placeholder="טקסט ההמלצה"
+          value={newQuote}
+          onChange={(e) => setNewQuote(e.target.value)}
+          className="border border-mist bg-transparent p-3 outline-none focus:border-ink"
+        />
+        <input
+          placeholder="שם הלקוחה (אופציונלי)"
+          value={newAuthor}
+          onChange={(e) => setNewAuthor(e.target.value)}
+          className="border border-mist bg-transparent p-3 outline-none focus:border-ink"
+        />
+        <button
+          onClick={addTestimonial}
+          disabled={saving}
+          className="self-start text-xs border border-ink px-5 py-3 hover:bg-ink hover:text-bone transition-colors disabled:opacity-50"
+        >
+          {saving ? "מוסיפה..." : "הוספה"}
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-5">
+        {rows.map((row, i) => (
+          <div key={row.id} className="flex flex-col gap-2 border-b border-mist pb-5">
+            <textarea
+              rows={2}
+              value={row.quote}
+              onChange={(e) => {
+                const next = [...rows];
+                next[i] = { ...row, quote: e.target.value };
+                setRows(next);
+              }}
+              className="border border-mist bg-transparent p-3 outline-none focus:border-ink"
+            />
+            <input
+              value={row.author}
+              onChange={(e) => {
+                const next = [...rows];
+                next[i] = { ...row, author: e.target.value };
+                setRows(next);
+              }}
+              className="border border-mist bg-transparent p-3 outline-none focus:border-ink"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => updateRow(rows[i])}
+                className="text-xs border border-ink px-4 py-2.5 hover:bg-ink hover:text-bone transition-colors"
+              >
+                שמירה
+              </button>
+              <button
+                onClick={() => deleteRow(row.id)}
+                className="text-xs border border-rust text-rust px-4 py-2.5 hover:bg-rust hover:text-bone transition-colors"
+              >
+                מחיקה
+              </button>
+            </div>
+          </div>
+        ))}
+        {rows.length === 0 && <p className="text-sm text-stone">אין עדיין המלצות שמורות.</p>}
+      </div>
+    </div>
+  );
+}

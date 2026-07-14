@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bone text-ink font-body font-light antialiased;
+    line-height: 1.7;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-normal;
+    line-height: 1.15;
+  }
+
+  ::selection {
+    @apply bg-olive text-bone;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid theme("colors.olive");
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .eyebrow {
+    @apply text-xs tracking-widest2 uppercase text-stone font-normal;
+  }
+
+  .hairline {
+    @apply border-mist;
+  }
+
+  /* חסימת סימון/גרירת תמונות - שכבת הגנה בסיסית, לא אבטחה מלאה */
+  .protected-image {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: auto;
+  }
+
+  /* מסגרת עדינה שנפתחת ב-hover על אריחי גלריה - האלמנט החתום של האתר */
+  .frame-hover {
+    @apply pointer-events-none absolute inset-4 border border-bone/0 transition-all duration-500 ease-editorial;
+  }
+  .group:hover .frame-hover {
+    @apply inset-3 border-bone/70;
+  }
+
+  .animate-hero-pan {
+    animation: heroPan 22s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes heroPan {
+  from {
+    transform: scale(1) translate(0, 0);
+  }
+  to {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
