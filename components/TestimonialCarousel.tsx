@@ -18,7 +18,7 @@ export default function TestimonialCarousel({ items }: { items: Testimonial[] })
   return (
     <div className="max-w-2xl mx-auto text-center">
       <blockquote key={current.id} className="animate-[fadeIn_.6s_ease-out]">
-        <p className="font-display italic text-2xl md:text-3xl leading-snug text-ink">
+        <p className="font-display italic text-2xl md:text-3xl leading-snug text-ink whitespace-pre-line">
           “{current.quote}”
         </p>
         <footer className="eyebrow mt-6 not-italic">{current.author}</footer>

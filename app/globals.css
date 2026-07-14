@@ -72,11 +72,12 @@
   }
 
   /* מסגרת עדינה שנפתחת ב-hover על אריחי גלריה - האלמנט החתום של האתר */
-  .frame-hover {
-    @apply pointer-events-none absolute inset-4 border border-bone/0 transition-all duration-500 ease-editorial;
+  /* וייל עדין שכהה מעט את התמונה ב-hover - חלופה רכה יותר למסגרת שהייתה קודם */
+  .hover-veil {
+    @apply pointer-events-none absolute inset-0 bg-ink/0 transition-colors duration-500 ease-editorial;
   }
-  .group:hover .frame-hover {
-    @apply inset-3 border-bone/70;
+  .group:hover .hover-veil {
+    @apply bg-ink/10;
   }
 
   .animate-hero-pan {
@@ -91,4 +92,3 @@
   to {
     transform: scale(1.08) translate(-1%, -1%);
   }
-}

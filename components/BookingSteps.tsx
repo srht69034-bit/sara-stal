@@ -26,7 +26,7 @@ export default function BookingSteps({ content }: { content: ContentMap }) {
                 {i + 1}
               </div>
               <h3 className="font-display text-lg mt-5 mb-2">{s.title}</h3>
-              <p className="text-sm text-stone leading-relaxed max-w-[220px]">{s.body}</p>
+              <p className="text-sm text-stone leading-relaxed max-w-[220px] whitespace-pre-line">{s.body}</p>
             </div>
           </AnimatedReveal>
         ))}

@@ -1,18 +1,26 @@
 /**
- * מילה ענקית ודהויה ברקע, כמו בקונספט שנשלח - נותנת עומק ואופי
- * עיצובי בלי להסיח את הדעת מהתוכן שמעליה. aria-hidden כי היא
- * דקורטיבית בלבד. ממוקמת מאחורי התוכן (z-index נמוך) בתוך סקשן
- * עם overflow-hidden.
+ * מילה דהויה ברקע, בהשראת הקונספט שנשלח - משולבת בעדינות מאחורי
+ * הכותרת של הסקשן (לא ממורכזת ענקית על פני כל הסקשן), כדי שתוסיף
+ * אופי בלי להתחרות עם התוכן. aria-hidden כי היא דקורטיבית בלבד.
  */
-export default function BackgroundWord({ word }: { word: string }) {
+export default function BackgroundWord({
+  word,
+  align = "start",
+}: {
+  word: string;
+  align?: "start" | "center" | "end";
+}) {
+  const alignClass =
+    align === "center" ? "justify-center text-center" : align === "end" ? "justify-end text-end" : "justify-start text-start";
+
   return (
     <span
       aria-hidden="true"
-      className="protected-image pointer-events-none select-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
+      className={`pointer-events-none select-none absolute inset-x-0 -top-2 md:-top-4 z-0 flex ${alignClass} overflow-hidden`}
     >
       <span
-        className="font-display text-mist whitespace-nowrap"
-        style={{ fontSize: "clamp(6rem, 18vw, 16rem)", lineHeight: 1 }}
+        className="font-display text-mist/80 whitespace-nowrap"
+        style={{ fontSize: "clamp(2.75rem, 7vw, 6rem)", lineHeight: 1 }}
       >
         {word}
       </span>

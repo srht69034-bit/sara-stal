@@ -20,23 +20,37 @@ function Tile({
   image: GalleryImage;
   onOpen: () => void;
 }) {
-  const imgRef = useRef<HTMLImageElement>(null);
+  const wrapRef = useRef<HTMLButtonElement>(null);
   const [span, setSpan] = useState(40);
 
-  const measure = useCallback(() => {
-    const el = imgRef.current;
-    if (!el) return;
-    const height = el.getBoundingClientRect().height;
-    setSpan(Math.ceil((height + GAP) / (ROW_UNIT + GAP)));
+  // מודדים לפי המימדים האמיתיים (naturalWidth/naturalHeight) של הקובץ
+  // ולא לפי הגובה המוצג כרגע - כך תמונה לאורך נשארת לאורך, ותמונה
+  // לרוחב נשארת לרוחב, בלי חיתוך מלאכותי (בלי object-cover).
+  const measure = useCallback((img: HTMLImageElement) => {
+    const wrap = wrapRef.current;
+    if (!wrap || !img.naturalWidth) return;
+    const width = wrap.getBoundingClientRect().width;
+    const renderedHeight = width * (img.naturalHeight / img.naturalWidth);
+    setSpan(Math.ceil((renderedHeight + GAP) / (ROW_UNIT + GAP)));
   }, []);
 
+  const onLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => measure(e.currentTarget),
+    [measure]
+  );
+
   useEffect(() => {
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    const onResize = () => {
+      const img = wrapRef.current?.querySelector("img");
+      if (img && img.complete) measure(img);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [measure]);
 
   return (
     <button
+      ref={wrapRef}
       type="button"
       onClick={onOpen}
       className="group relative block w-full overflow-hidden bg-mist text-start"
@@ -44,14 +58,13 @@ function Tile({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        ref={imgRef}
         src={image.url}
         alt={image.alt}
         loading="lazy"
-        onLoad={measure}
-        className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.02]"
+        onLoad={onLoad}
+        className="protected-image block w-full h-auto transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.02]"
       />
-      <span className="frame-hover" />
+      <span className="hover-veil" />
     </button>
   );
 }
@@ -91,17 +104,14 @@ export default function MasonryGallery({ images }: { images: GalleryImage[] }) {
   return (
     <>
       {/*
-        גריד Masonry אמיתי מבוסס-שורות: כל תמונה תופסת מספר "שורות" יחסי
-        לגובה שלה, כך שהזרימה נשארת לפי רוחב העמוד (שורה-שורה, מימין
-        לשמאל) והסדר המקורי של התמונות נשמר במדויק - בניגוד לפריסת
-        columns שממלאת עמודה שלמה לפני המעבר לבאה.
+        גריד Masonry אמיתי מבוסס-שורות, בדיוק 3 עמודות בדסקטופ (לא
+        auto-fill שיכול לייצר יותר על מסכים רחבים) - כל תמונה תופסת
+        מספר "שורות" יחסי לגובה האמיתי שלה, כך שהיחס המקורי נשמר
+        במדויק, והזרימה עדיין לפי רוחב העמוד ולא לאורכו.
       */}
       <div
-        className="grid gap-3.5"
-        style={{
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gridAutoRows: `${ROW_UNIT}px`,
-        }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"
+        style={{ gridAutoRows: `${ROW_UNIT}px` }}
       >
         {images.map((img, i) => (
           <Tile key={img.id} image={img} onOpen={() => setLightboxIndex(i)} />

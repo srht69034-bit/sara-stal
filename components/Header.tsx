@@ -19,20 +19,22 @@ export default function Header({
   logoUrl?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-bone/90 backdrop-blur-sm border-b border-mist">
-      <div className="mx-auto max-w-editorial px-8 md:px-10 py-5 flex items-center justify-between">
+      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={siteName} className="h-10 w-auto object-contain" />
+            <img src={logoUrl} alt={siteName} className="h-9 w-auto object-contain" />
           ) : (
-            <span className="font-display text-xl tracking-wide">{siteName}</span>
+            <span className="font-display text-lg tracking-wide">{siteName}</span>
           )}
         </Link>
 
-        <nav className="flex items-center gap-10 text-sm">
+        {/* ניווט דסקטופ - שקט ומינימלי, בלי כפתור מודגש ובלי אנימציית קו רועשת */}
+        <nav className="hidden md:flex items-center gap-8 text-sm">
           {/*
             ה"גשר" הבא (pt-3 בתוך אלמנט שמתחיל מיד ב-top-full, בלי מרווח
             חיצוני) מבטיח שהעכבר לא "יוצא" מאזור ה-hover בזמן המעבר בין
@@ -44,7 +46,7 @@ export default function Header({
             onMouseLeave={() => setOpen(false)}
           >
             <button
-              className="eyebrow relative flex items-center gap-1.5 py-2 hover:text-olive transition-colors duration-300 group"
+              className="eyebrow flex items-center gap-1.5 py-2 hover:text-olive transition-colors duration-300"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
             >
@@ -55,7 +57,6 @@ export default function Header({
               >
                 ⌄
               </span>
-              <span className="absolute -bottom-0.5 right-0 h-px w-0 bg-olive transition-all duration-300 ease-editorial group-hover:w-full" />
             </button>
 
             {open && (
@@ -76,24 +77,51 @@ export default function Header({
             )}
           </div>
 
-          <Link href="/albums" className="eyebrow relative py-2 hover:text-olive transition-colors duration-300 group">
+          <Link href="/albums" className="eyebrow py-2 hover:text-olive transition-colors duration-300">
             אלבומים
-            <span className="absolute -bottom-0.5 right-0 h-px w-0 bg-olive transition-all duration-300 ease-editorial group-hover:w-full" />
           </Link>
-
-          <Link href="/#about" className="eyebrow relative py-2 hover:text-olive transition-colors duration-300 group">
+          <Link href="/#about" className="eyebrow py-2 hover:text-olive transition-colors duration-300">
             עלי
-            <span className="absolute -bottom-0.5 right-0 h-px w-0 bg-olive transition-all duration-300 ease-editorial group-hover:w-full" />
           </Link>
-
-          <Link
-            href="/#contact"
-            className="eyebrow border border-olive px-5 py-2.5 hover:bg-olive hover:text-bone transition-colors duration-300"
-          >
+          <Link href="/#contact" className="eyebrow py-2 hover:text-olive transition-colors duration-300">
             יצירת קשר
           </Link>
         </nav>
+
+        {/* כפתור המבורגר - מובייל/טאבלט בלבד */}
+        <button
+          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="תפריט"
+          aria-expanded={mobileOpen}
+        >
+          <span className={`block h-px w-5 bg-ink transition-transform ${mobileOpen ? "translate-y-[3px] rotate-45" : ""}`} />
+          <span className={`block h-px w-5 bg-ink transition-opacity ${mobileOpen ? "opacity-0" : ""}`} />
+          <span className={`block h-px w-5 bg-ink transition-transform ${mobileOpen ? "-translate-y-[3px] -rotate-45" : ""}`} />
+        </button>
       </div>
+
+      {mobileOpen && (
+        <nav className="md:hidden border-t border-mist bg-bone px-6 py-6 flex flex-col gap-5 animate-[fadeIn_.2s_ease-out]">
+          <p className="eyebrow text-stone">גלריות</p>
+          <div className="flex flex-col gap-4 ps-3">
+            {GALLERIES.map((g) => (
+              <Link key={g.slug} href={`/gallery/${g.slug}`} onClick={() => setMobileOpen(false)} className="text-sm">
+                {g.label}
+              </Link>
+            ))}
+          </div>
+          <Link href="/albums" onClick={() => setMobileOpen(false)} className="eyebrow">
+            אלבומים
+          </Link>
+          <Link href="/#about" onClick={() => setMobileOpen(false)} className="eyebrow">
+            עלי
+          </Link>
+          <Link href="/#contact" onClick={() => setMobileOpen(false)} className="eyebrow">
+            יצירת קשר
+          </Link>
+        </nav>
+      )}
     </header>
   );
 }

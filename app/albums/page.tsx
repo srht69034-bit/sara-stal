@@ -50,7 +50,7 @@ export default async function AlbumsPage() {
               <div className="md:w-1/2 flex flex-col justify-center px-8 md:px-16 py-14">
                 <h2 className="font-display text-3xl mb-4">{album.title}</h2>
                 {album.description && (
-                  <p className="text-bone/70 max-w-md leading-relaxed">{album.description}</p>
+                  <p className="text-bone/70 max-w-md leading-relaxed whitespace-pre-line">{album.description}</p>
                 )}
                 <span className="eyebrow text-olive mt-8 inline-flex items-center gap-2">
                   לצפייה באלבום

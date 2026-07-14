@@ -26,13 +26,23 @@ export default function AlbumManager() {
   const [newDesc, setNewDesc] = useState("");
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function loadAlbums() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("albums")
       .select("id, title, description, cover_url, cover_path")
       .order("sort_order", { ascending: true });
+    if (error) {
+      setError(
+        error.message.includes("does not exist") || error.code === "42P01"
+          ? "טבלת האלבומים עוד לא קיימת ב-Supabase - יש להריץ את migration_02_albums_testimonials.sql ב-SQL Editor"
+          : `שגיאה בטעינת אלבומים: ${error.message}`
+      );
+      return;
+    }
+    setError(null);
     setAlbums((data as Album[]) ?? []);
   }
 
@@ -44,13 +54,18 @@ export default function AlbumManager() {
   async function createAlbum() {
     if (!newTitle.trim()) return;
     setCreating(true);
-    await supabase.from("albums").insert({
+    const { error } = await supabase.from("albums").insert({
       title: newTitle,
       description: newDesc,
       sort_order: albums.length,
     });
-    setNewTitle("");
-    setNewDesc("");
+    if (error) {
+      setError(`שגיאה ביצירת אלבום: ${error.message}`);
+    } else {
+      setError(null);
+      setNewTitle("");
+      setNewDesc("");
+    }
     setCreating(false);
     await loadAlbums();
   }
@@ -121,6 +136,7 @@ export default function AlbumManager() {
         >
           {creating ? "יוצרת..." : "יצירת אלבום"}
         </button>
+        {error && <p className="text-xs text-rust">{error}</p>}
       </div>
 
       <div className="flex flex-col gap-4">

@@ -39,20 +39,20 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent" />
 
         <div className="relative z-10 flex h-full items-end">
-          <div className="mx-auto w-full max-w-editorial px-8 md:px-10 pb-16 md:pb-20">
+          <div className="mx-auto w-full max-w-editorial px-6 sm:px-8 md:px-10 pb-16 md:pb-20">
             <AnimatedReveal>
               <p className="eyebrow mb-5 text-bone/85">פורטפוליו צילום</p>
-              <h1 className="font-display text-bone text-4xl md:text-6xl leading-[1.1] max-w-2xl">
+              <h1 className="font-display text-bone text-3xl sm:text-4xl md:text-6xl leading-[1.15] max-w-2xl break-words">
                 {content.hero_title}
               </h1>
-              <p className="text-bone/90 text-lg mt-6 max-w-md font-light">{content.hero_subtitle}</p>
+              <p className="text-bone/90 text-base sm:text-lg mt-6 max-w-md font-light">{content.hero_subtitle}</p>
             </AnimatedReveal>
           </div>
         </div>
       </section>
 
-      {/* Galleries - פריסת "גלריית אמנות" קומפקטית עם תמהיל צורות */}
-      <section className="mx-auto max-w-editorial px-8 md:px-10 pt-28 pb-24">
+      {/* Galleries - פריסת "גלריית אמנות" קומפקטית וסימטרית */}
+      <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-24 pb-24">
         <AnimatedReveal>
           <p className="eyebrow mb-10 text-center">{content.galleries_title}</p>
         </AnimatedReveal>
@@ -68,28 +68,12 @@ export default async function HomePage() {
         </AnimatedReveal>
       </section>
 
-      {/* Albums teaser - קישור לעמוד האלבומים, גם באמצע העמוד וגם בתפריט */}
-      <AlbumsTeaser albums={albums} content={content} />
-
-      {/* Booking steps - שלבי ההזמנה */}
-      <BookingSteps content={content} />
-
-      {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}
-      <section className="relative mx-auto max-w-editorial px-8 md:px-10 py-20 overflow-hidden">
-        <BackgroundWord word="Moments" />
-        <div className="relative z-10">
-          <AnimatedReveal direction="scale">
-            <TestimonialCarousel items={testimonials} />
-          </AnimatedReveal>
-        </div>
-      </section>
-
-      {/* About */}
+      {/* About - הועלה גבוה יותר בעמוד */}
       <section
         id="about"
-        className="relative mx-auto max-w-editorial px-8 md:px-10 pt-4 pb-28 grid md:grid-cols-2 gap-16 items-center overflow-hidden"
+        className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-12 pb-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center overflow-hidden"
       >
-        <BackgroundWord word="Story" />
+        <BackgroundWord word="Story" align="start" />
         <AnimatedReveal direction="right" className="relative z-10 order-2 md:order-1">
           <div className="aspect-[4/5] bg-mist overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -103,18 +87,34 @@ export default async function HomePage() {
         <div className="relative z-10 order-1 md:order-2">
           <AnimatedReveal direction="left">
             <p className="eyebrow mb-6">{content.about_title}</p>
-            <p className="text-lg leading-relaxed">{content.about_body}</p>
+            <p className="text-lg leading-relaxed whitespace-pre-line">{content.about_body}</p>
+          </AnimatedReveal>
+        </div>
+      </section>
+
+      {/* Albums teaser - קישור לעמוד האלבומים, גם באמצע העמוד וגם בתפריט */}
+      <AlbumsTeaser albums={albums} content={content} />
+
+      {/* Booking steps - שלבי ההזמנה */}
+      <BookingSteps content={content} />
+
+      {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}
+      <section className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20 overflow-hidden">
+        <BackgroundWord word="Moments" align="center" />
+        <div className="relative z-10">
+          <AnimatedReveal direction="scale">
+            <TestimonialCarousel items={testimonials} />
           </AnimatedReveal>
         </div>
       </section>
 
       {/* Contact */}
-      <section id="contact" className="relative mx-auto max-w-editorial px-8 md:px-10 pb-32 overflow-hidden">
-        <BackgroundWord word="Connect" />
+      <section id="contact" className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pb-32 overflow-hidden">
+        <BackgroundWord word="Connect" align="start" />
         <div className="relative z-10">
           <AnimatedReveal>
             <p className="eyebrow mb-6">{content.contact_title}</p>
-            <p className="text-stone mb-8 max-w-md">{content.contact_body}</p>
+            <p className="text-stone mb-8 max-w-md whitespace-pre-line">{content.contact_body}</p>
             <ContactForm />
           </AnimatedReveal>
         </div>

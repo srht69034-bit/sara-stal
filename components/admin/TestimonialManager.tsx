@@ -10,13 +10,23 @@ export default function TestimonialManager() {
   const [newQuote, setNewQuote] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function load() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("testimonials")
       .select("id, quote, author, sort_order")
       .order("sort_order", { ascending: true });
+    if (error) {
+      setError(
+        error.message.includes("does not exist") || error.code === "42P01"
+          ? "טבלת ההמלצות עוד לא קיימת ב-Supabase - יש להריץ את migration_02_albums_testimonials.sql ב-SQL Editor"
+          : `שגיאה בטעינת המלצות: ${error.message}`
+      );
+      return;
+    }
+    setError(null);
     setRows((data as Row[]) ?? []);
   }
 
@@ -28,13 +38,18 @@ export default function TestimonialManager() {
   async function addTestimonial() {
     if (!newQuote.trim()) return;
     setSaving(true);
-    await supabase.from("testimonials").insert({
+    const { error } = await supabase.from("testimonials").insert({
       quote: newQuote,
       author: newAuthor,
       sort_order: rows.length,
     });
-    setNewQuote("");
-    setNewAuthor("");
+    if (error) {
+      setError(`שגיאה בהוספת המלצה: ${error.message}`);
+    } else {
+      setError(null);
+      setNewQuote("");
+      setNewAuthor("");
+    }
     setSaving(false);
     await load();
   }
@@ -75,6 +90,7 @@ export default function TestimonialManager() {
         >
           {saving ? "מוסיפה..." : "הוספה"}
         </button>
+        {error && <p className="text-xs text-rust">{error}</p>}
       </div>
 
       <div className="flex flex-col gap-5">
