@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type GalleryImage = {
   id: string;
@@ -8,60 +8,36 @@ export type GalleryImage = {
   alt: string;
 };
 
-// גובה יחידת השורה (px) שמשמשת לחישוב כמה "שורות" כל תמונה תופסת -
-// ככל שהיחידה קטנה יותר, הפריסה מדויקת יותר לגובה האמיתי של התמונה.
-const ROW_UNIT = 8;
-const GAP = 14;
+const GAP_PX = 14;
 
-function Tile({
-  image,
-  onOpen,
-}: {
-  image: GalleryImage;
-  onOpen: () => void;
-}) {
-  const wrapRef = useRef<HTMLButtonElement>(null);
-  const [span, setSpan] = useState(40);
-
-  // מודדים לפי המימדים האמיתיים (naturalWidth/naturalHeight) של הקובץ
-  // ולא לפי הגובה המוצג כרגע - כך תמונה לאורך נשארת לאורך, ותמונה
-  // לרוחב נשארת לרוחב, בלי חיתוך מלאכותי (בלי object-cover).
-  const measure = useCallback((img: HTMLImageElement) => {
-    const wrap = wrapRef.current;
-    if (!wrap || !img.naturalWidth) return;
-    const width = wrap.getBoundingClientRect().width;
-    const renderedHeight = width * (img.naturalHeight / img.naturalWidth);
-    setSpan(Math.ceil((renderedHeight + GAP) / (ROW_UNIT + GAP)));
-  }, []);
-
-  const onLoad = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => measure(e.currentTarget),
-    [measure]
-  );
+function useColumnCount() {
+  const [columns, setColumns] = useState(3);
 
   useEffect(() => {
-    const onResize = () => {
-      const img = wrapRef.current?.querySelector("img");
-      if (img && img.complete) measure(img);
+    const update = () => {
+      const w = window.innerWidth;
+      setColumns(w < 640 ? 1 : w < 1024 ? 2 : 3);
     };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [measure]);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
+  return columns;
+}
+
+function Tile({ image, onOpen }: { image: GalleryImage; onOpen: () => void }) {
   return (
     <button
-      ref={wrapRef}
       type="button"
       onClick={onOpen}
       className="group relative block w-full overflow-hidden bg-mist text-start"
-      style={{ gridRowEnd: `span ${span}` }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={image.url}
         alt={image.alt}
         loading="lazy"
-        onLoad={onLoad}
         className="protected-image block w-full h-auto transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.02]"
       />
       <span className="hover-veil" />
@@ -71,6 +47,7 @@ function Tile({
 
 export default function MasonryGallery({ images }: { images: GalleryImage[] }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const columnCount = useColumnCount();
 
   const close = useCallback(() => setLightboxIndex(null), []);
   const prev = useCallback(
@@ -101,20 +78,25 @@ export default function MasonryGallery({ images }: { images: GalleryImage[] }) {
     return <p className="text-stone text-sm">התמונות בגלריה זו יתווספו בקרוב.</p>;
   }
 
+  // חלוקה round-robin לעמודות (תמונה 1→עמודה 1, תמונה 2→עמודה 2 וכו') -
+  // כל עמודה היא מחסנית פשוטה עם gap אחיד ומדויק (בלי חישוב "שורות"
+  // שמעגל כלפי מעלה ומשאיר שוליים) - זה מה שיצר את הרווח המכוער בעבר.
+  // הסדר המקורי עדיין נשמר כי התמונות מתחלקות ברצף בין העמודות.
+  const columns: { image: GalleryImage; index: number }[][] = Array.from(
+    { length: columnCount },
+    () => []
+  );
+  images.forEach((image, i) => columns[i % columnCount].push({ image, index: i }));
+
   return (
     <>
-      {/*
-        גריד Masonry אמיתי מבוסס-שורות, בדיוק 3 עמודות בדסקטופ (לא
-        auto-fill שיכול לייצר יותר על מסכים רחבים) - כל תמונה תופסת
-        מספר "שורות" יחסי לגובה האמיתי שלה, כך שהיחס המקורי נשמר
-        במדויק, והזרימה עדיין לפי רוחב העמוד ולא לאורכו.
-      */}
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"
-        style={{ gridAutoRows: `${ROW_UNIT}px` }}
-      >
-        {images.map((img, i) => (
-          <Tile key={img.id} image={img} onOpen={() => setLightboxIndex(i)} />
+      <div className="flex" style={{ gap: GAP_PX }}>
+        {columns.map((col, ci) => (
+          <div key={ci} className="flex-1 flex flex-col" style={{ gap: GAP_PX }}>
+            {col.map(({ image, index }) => (
+              <Tile key={image.id} image={image} onOpen={() => setLightboxIndex(index)} />
+            ))}
+          </div>
         ))}
       </div>
 
