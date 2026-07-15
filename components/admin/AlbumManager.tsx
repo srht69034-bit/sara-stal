@@ -45,11 +45,13 @@ export default function AlbumManager() {
       .select("id, title, description, cover_url, cover_path, banner_url, banner_path")
       .order("created_at", { ascending: false });
     if (error) {
-      setError(
-        error.message.includes("does not exist") || error.code === "42P01"
-          ? "טבלת האלבומים עוד לא קיימת ב-Supabase - יש להריץ את migration_02_albums_testimonials.sql ב-SQL Editor"
-          : `שגיאה בטעינת אלבומים: ${error.message}`
-      );
+      let hint = `שגיאה בטעינת אלבומים: ${error.message}`;
+      if (error.code === "42P01") {
+        hint = "טבלת האלבומים עוד לא קיימת ב-Supabase - יש להריץ את migration_02_albums_testimonials.sql ב-SQL Editor";
+      } else if (error.code === "42703") {
+        hint = "חסרות עמודות banner_url/banner_path בטבלת האלבומים - יש להריץ את migration_03_album_banner.sql ב-SQL Editor";
+      }
+      setError(hint);
       return;
     }
     setError(null);

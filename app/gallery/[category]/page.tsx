@@ -28,10 +28,12 @@ export default async function GalleryPage({
 }: {
   params: { category: string };
 }) {
-  const content = await getSiteContent();
+  const [content, images] = await Promise.all([
+    getSiteContent(),
+    getGalleryImages(params.category),
+  ]);
   const label = galleryLabel(content, params.category);
   const labels = galleryLabels(content);
-  const images = await getGalleryImages(params.category);
   const bannerUrl = content[`gallery_banner_${params.category}_url`];
 
   return (
