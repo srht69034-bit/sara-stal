@@ -35,7 +35,7 @@ export const DEFAULT_CONTENT: Record<string, string> = {
   preview_newborn_image_url: "https://picsum.photos/seed/newborn-soft/900/620",
   preview_smashcake_image_url: "https://picsum.photos/seed/smash-cake-birthday/900/620",
   logo_image_url: "",
-  site_name: "Sara Stal",
+  site_name: "Sarah Stal",
   preview_outdoor_caption: "בין עצים ואור טבעי",
   preview_chalakah_caption: "רגע שנחגג במעגל",
   preview_studio_caption: "רוגע ואור מבוים",

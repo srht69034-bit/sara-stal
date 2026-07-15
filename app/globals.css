@@ -16,11 +16,13 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-bone text-ink font-body font-light antialiased;
     line-height: 1.7;
+    overflow-x: hidden;
   }
 
   h1,

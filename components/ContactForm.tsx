@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import emailjs from "@emailjs/browser";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -31,31 +32,50 @@ export default function ContactForm() {
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const sessionType = (form.elements.namedItem("sessionType") as HTMLSelectElement).value;
     const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value;
+    const sessionLabel = SESSION_LABELS[sessionType] ?? sessionType;
 
-    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
-    if (!accessKey) {
+    const web3formsKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+    if (!web3formsKey) {
       setStatus("error");
       setErrorMsg("טופס יצירת הקשר עדיין לא מוגדר - חסר NEXT_PUBLIC_WEB3FORMS_KEY בהגדרות הסביבה.");
       return;
     }
 
     try {
-      // Web3Forms - שירות פשוט לשליחת טפסים לתיבת מייל, בלי צורך בדומיין
-      // מאומת או שרת משלנו. ה-access_key ציבורי ובטוח לחשיפה בצד לקוח.
+      // 1) התראה אלייך דרך Web3Forms - בלי צורך בדומיין מאומת
       const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          access_key: accessKey,
-          subject: `פנייה חדשה מהאתר - ${name}`,
+          access_key: web3formsKey,
+          subject: `🔔 פנייה חדשה מהאתר — ${name} (${sessionLabel})`,
           name,
           email,
-          "סוג צילום": SESSION_LABELS[sessionType] ?? sessionType,
+          "סוג צילום": sessionLabel,
           message,
         }),
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.message ?? "send failed");
+
+      // 2) מענה אוטומטי מעוצב לפונה, דרך EmailJS (אופציונלי - רק אם הוגדר)
+      const emailjsServiceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const emailjsTemplateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const emailjsPublicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+      if (emailjsServiceId && emailjsTemplateId && emailjsPublicKey) {
+        try {
+          await emailjs.send(
+            emailjsServiceId,
+            emailjsTemplateId,
+            { to_name: name, to_email: email },
+            { publicKey: emailjsPublicKey }
+          );
+        } catch {
+          // המענה האוטומטי הוא "בונוס" - לא מפילים את כל השליחה אם הוא נכשל,
+          // כי ההתראה אלייך (הקריטית) כבר נשלחה בהצלחה למעלה.
+        }
+      }
+
       setStatus("sent");
       form.reset();
     } catch (err) {

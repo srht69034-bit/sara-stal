@@ -5,7 +5,15 @@ import { createClient } from "@/lib/supabase/client";
 import imageCompression from "browser-image-compression";
 import { safeFileName } from "@/lib/sanitize";
 
-type Album = { id: string; title: string; description: string; cover_url: string; cover_path: string };
+type Album = {
+  id: string;
+  title: string;
+  description: string;
+  cover_url: string;
+  cover_path: string;
+  banner_url: string;
+  banner_path: string;
+};
 type AlbumImg = { id: string; url: string; path: string; alt: string };
 
 async function compress(rawFile: File): Promise<File> {
@@ -34,7 +42,7 @@ export default function AlbumManager() {
   async function loadAlbums() {
     const { data, error } = await supabase
       .from("albums")
-      .select("id, title, description, cover_url, cover_path")
+      .select("id, title, description, cover_url, cover_path, banner_url, banner_path")
       .order("created_at", { ascending: false });
     if (error) {
       setError(
@@ -90,6 +98,7 @@ export default function AlbumManager() {
       .eq("album_id", album.id);
     const paths = (imgs ?? []).map((r: { path: string }) => r.path);
     if (album.cover_path) paths.push(album.cover_path);
+    if (album.banner_path) paths.push(album.banner_path);
     if (paths.length > 0) {
       await supabase.storage.from("gallery").remove(paths);
     }
@@ -105,21 +114,46 @@ export default function AlbumManager() {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
     const file = await compress(rawFile);
-    const path = `albums/${album.id}/${safeFileName(rawFile.name)}`;
+    const path = `albums/${album.id}/cover-${safeFileName(rawFile.name)}`;
     const { error } = await supabase.storage.from("gallery").upload(path, file, { upsert: true });
     if (error) {
-      setRowError((er) => ({ ...er, [album.id]: `שגיאה בהעלאת תמונת שער: ${error.message}` }));
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בהעלאת תמונה ראשית: ${error.message}` }));
       return;
     }
     const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
-    // מוחקת את תמונת השער הקודמת מה-Storage כדי לא להשאיר קבצים יתומים
+    // מוחקת את התמונה הראשית הקודמת מה-Storage כדי לא להשאיר קבצים יתומים
     if (album.cover_path) await supabase.storage.from("gallery").remove([album.cover_path]);
     const { error: updateError } = await supabase
       .from("albums")
       .update({ cover_url: publicUrl.publicUrl, cover_path: path })
       .eq("id", album.id);
     if (updateError) {
-      setRowError((er) => ({ ...er, [album.id]: `שגיאה בשמירת שער: ${updateError.message}` }));
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בשמירת תמונה ראשית: ${updateError.message}` }));
+      return;
+    }
+    setRowError((er) => ({ ...er, [album.id]: "" }));
+    await loadAlbums();
+  }
+
+  async function uploadBanner(album: Album, e: React.ChangeEvent<HTMLInputElement>) {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+    const file = await compress(rawFile);
+    const path = `albums/${album.id}/banner-${safeFileName(rawFile.name)}`;
+    const { error } = await supabase.storage.from("gallery").upload(path, file, { upsert: true });
+    if (error) {
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בהעלאת באנר: ${error.message}` }));
+      return;
+    }
+    const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
+    // מוחקת את הבאנר הקודם מה-Storage כדי לא להשאיר קבצים יתומים
+    if (album.banner_path) await supabase.storage.from("gallery").remove([album.banner_path]);
+    const { error: updateError } = await supabase
+      .from("albums")
+      .update({ banner_url: publicUrl.publicUrl, banner_path: path })
+      .eq("id", album.id);
+    if (updateError) {
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בשמירת באנר: ${updateError.message}` }));
       return;
     }
     setRowError((er) => ({ ...er, [album.id]: "" }));
@@ -157,11 +191,19 @@ export default function AlbumManager() {
         {albums.map((album, i) => (
           <div key={album.id} className="border border-mist">
             <div className="flex items-center gap-4 p-4">
-              <div className="w-16 h-16 bg-mist shrink-0 overflow-hidden">
-                {album.cover_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={album.cover_url} alt="" className="h-full w-full object-cover" />
-                )}
+              <div className="flex gap-2 shrink-0">
+                <div className="w-16 h-16 bg-mist overflow-hidden" title="תמונה ראשית">
+                  {album.cover_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={album.cover_url} alt="" className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <div className="w-16 h-16 bg-mist overflow-hidden" title="באנר">
+                  {album.banner_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={album.banner_url} alt="" className="h-full w-full object-cover" />
+                  )}
+                </div>
               </div>
               <div className="flex-1 flex flex-col gap-2">
                 <input
@@ -186,8 +228,12 @@ export default function AlbumManager() {
               </div>
               <div className="flex flex-col gap-2 shrink-0">
                 <label className="text-xs border border-mist px-3 py-2 cursor-pointer hover:border-ink transition-colors text-center">
-                  שער
+                  תמונה ראשית
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadCover(album, e)} />
+                </label>
+                <label className="text-xs border border-mist px-3 py-2 cursor-pointer hover:border-ink transition-colors text-center">
+                  באנר לעמוד
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadBanner(album, e)} />
                 </label>
                 <button
                   onClick={() => updateAlbum(albums[i])}

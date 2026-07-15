@@ -33,7 +33,7 @@ export default function Header({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt={siteName} className="h-9 w-auto object-contain" />
           ) : (
-            <span className="font-display text-lg tracking-wide">{siteName}</span>
+            <span className="font-display text-lg tracking-wide text-ink">{siteName}</span>
           )}
         </Link>
 
@@ -71,7 +71,7 @@ export default function Header({
                       key={slug}
                       href={`/gallery/${slug}`}
                       onClick={() => setOpen(false)}
-                      className="block px-5 py-3 text-sm hover:bg-mist/40 hover:text-olive transition-colors duration-200"
+                      className="block px-5 py-3 text-sm text-ink hover:bg-mist/40 hover:text-olive transition-colors duration-200"
                     >
                       {labels[slug]}
                     </Link>
@@ -110,7 +110,7 @@ export default function Header({
           <p className="eyebrow text-stone">גלריות</p>
           <div className="flex flex-col gap-4 ps-3">
             {GALLERY_SLUGS.map((slug) => (
-              <Link key={slug} href={`/gallery/${slug}`} onClick={() => setMobileOpen(false)} className="text-sm">
+              <Link key={slug} href={`/gallery/${slug}`} onClick={() => setMobileOpen(false)} className="text-sm text-ink">
                 {labels[slug]}
               </Link>
             ))}

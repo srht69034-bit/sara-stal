@@ -94,8 +94,8 @@ export default async function HomePage() {
       <BookingSteps content={content} />
 
       {/* מפריד עדין בין שלבי ההזמנה להמלצות */}
-      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10">
-        <div className="h-px bg-mist" />
+      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-6">
+        <div className="h-px bg-ink/10" />
       </div>
 
       {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}

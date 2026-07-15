@@ -22,12 +22,12 @@ export default async function AlbumPage({ params }: { params: { id: string } }) 
     <div className="bg-ink text-bone min-h-screen">
       <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
-      {/* תמונה ראשית לאלבום - תמונת השער שהוגדרה לו בדשבורד */}
-      {album.cover_url && (
+      {/* תמונה ראשית לאלבום - הבאנר שהוגדר לו בדשבורד (או תמונה ראשית כגיבוי) */}
+      {(album.banner_url || album.cover_url) && (
         <section className="relative h-[46vh] min-h-[320px] w-full overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={album.cover_url}
+            src={album.banner_url || album.cover_url}
             alt={album.title}
             className="protected-image absolute inset-0 h-full w-full object-cover"
           />
@@ -36,6 +36,9 @@ export default async function AlbumPage({ params }: { params: { id: string } }) 
       )}
 
       <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-16 pb-10">
+        <Link href="/albums" className="eyebrow text-bone/70 hover:text-olive transition-colors duration-300 inline-flex items-center gap-2 mb-8">
+          → כל האלבומים
+        </Link>
         <p className="eyebrow text-bone/70 mb-3">אלבום</p>
         <h1 className="font-display text-3xl md:text-4xl mb-3">{album.title}</h1>
         {album.description && (

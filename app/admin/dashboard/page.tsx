@@ -6,6 +6,7 @@ import ImageManager from "@/components/admin/ImageManager";
 import SiteImageEditor from "@/components/admin/SiteImageEditor";
 import AlbumManager from "@/components/admin/AlbumManager";
 import TestimonialManager from "@/components/admin/TestimonialManager";
+import AdminTabs from "@/components/admin/AdminTabs";
 
 export default async function AdminDashboardPage() {
   const supabase = createClient();
@@ -22,32 +23,17 @@ export default async function AdminDashboardPage() {
   return (
     <main className="min-h-screen bg-bone px-6 py-12 mx-auto max-w-4xl">
       <h1 className="font-display text-3xl mb-2">לוח בקרה</h1>
-      <p className="text-stone mb-10">עריכת טקסטים ותמונות באתר</p>
+      <p className="text-stone mb-8">עריכת טקסטים ותמונות באתר</p>
 
-      <section className="mb-16">
-        <h2 className="eyebrow mb-6">טקסטים</h2>
-        <ContentEditor initialContent={content} />
-      </section>
-
-      <section className="mb-16">
-        <h2 className="eyebrow mb-6">תמונות עיצוב (באנר, אודות, לוגו, קישורי גלריה בעמוד הבית)</h2>
-        <SiteImageEditor initialContent={content} />
-      </section>
-
-      <section className="mb-16">
-        <h2 className="eyebrow mb-6">גלריות ותמונות (כולל באנר לכל גלריה)</h2>
-        <ImageManager />
-      </section>
-
-      <section className="mb-16">
-        <h2 className="eyebrow mb-6">אלבומים</h2>
-        <AlbumManager />
-      </section>
-
-      <section>
-        <h2 className="eyebrow mb-6">המלצות לקוחות</h2>
-        <TestimonialManager />
-      </section>
+      <AdminTabs
+        tabs={[
+          { id: "texts", label: "טקסטים", content: <ContentEditor initialContent={content} /> },
+          { id: "images", label: "תמונות עיצוב", content: <SiteImageEditor initialContent={content} /> },
+          { id: "galleries", label: "גלריות", content: <ImageManager /> },
+          { id: "albums", label: "אלבומים", content: <AlbumManager /> },
+          { id: "testimonials", label: "המלצות", content: <TestimonialManager /> },
+        ]}
+      />
     </main>
   );
 }

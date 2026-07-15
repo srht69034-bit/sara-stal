@@ -5,6 +5,7 @@ export type Album = {
   title: string;
   description: string;
   cover_url: string;
+  banner_url: string;
 };
 
 export type AlbumImage = {
@@ -18,7 +19,7 @@ export async function getAlbums(): Promise<Album[]> {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("albums")
-      .select("id, title, description, cover_url")
+      .select("id, title, description, cover_url, banner_url")
       .order("created_at", { ascending: false });
 
     if (error || !data) return [];
@@ -33,7 +34,7 @@ export async function getAlbum(id: string): Promise<Album | null> {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("albums")
-      .select("id, title, description, cover_url")
+      .select("id, title, description, cover_url, banner_url")
       .eq("id", id)
       .single();
 
