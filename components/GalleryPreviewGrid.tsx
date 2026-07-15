@@ -5,6 +5,7 @@ type Shape = "square" | "portrait" | "landscape";
 type PreviewItem = {
   slug: string;
   label: string;
+  caption?: string;
   imageUrl: string;
   shape: Shape;
 };
@@ -23,14 +24,17 @@ function Tile({ item }: { item: PreviewItem }) {
         <img
           src={item.imageUrl}
           alt={item.label}
-          className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.02]"
+          className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.04]"
           loading="lazy"
         />
         <span className="hover-veil" />
       </div>
       {/* הטקסט מתחת לתמונה (לא overlay עליה) - עקבי עם שאר העמודים באתר */}
-      <span className="eyebrow block mt-3 text-center group-hover:text-olive transition-colors duration-300">
-        {item.label}
+      <span className="block mt-3 text-center">
+        <span className="eyebrow block group-hover:text-olive transition-colors duration-300">
+          {item.label}
+        </span>
+        {item.caption && <span className="block text-xs text-stone mt-1">{item.caption}</span>}
       </span>
     </Link>
   );

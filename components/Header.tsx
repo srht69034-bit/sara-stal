@@ -2,24 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { GALLERY_SLUGS, type GallerySlug } from "@/lib/galleries";
 
-const GALLERIES = [
-  { slug: "chalakah", label: "חאלקה" },
-  { slug: "newborn", label: "ניובורן" },
-  { slug: "smash-cake", label: "סמאש קייק" },
-  { slug: "outdoor", label: "חוץ" },
-  { slug: "studio", label: "סטודיו" },
-];
+const FALLBACK_LABELS: Record<GallerySlug, string> = {
+  chalakah: "חאלקה",
+  newborn: "ניובורן",
+  "smash-cake": "סמאש קייק",
+  outdoor: "חוץ",
+  studio: "סטודיו",
+};
 
 export default function Header({
   siteName,
   logoUrl,
+  galleryLabels,
 }: {
   siteName: string;
   logoUrl?: string;
+  galleryLabels?: Record<GallerySlug, string>;
 }) {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const labels = galleryLabels ?? FALLBACK_LABELS;
 
   return (
     <header className="sticky top-0 z-50 bg-bone/90 backdrop-blur-sm border-b border-mist">
@@ -62,14 +66,14 @@ export default function Header({
             {open && (
               <div className="absolute end-0 top-full w-56 pt-3">
                 <div className="bg-bone border border-mist shadow-[0_12px_28px_-12px_rgba(61,58,54,0.18)] animate-[fadeIn_.2s_ease-out]">
-                  {GALLERIES.map((g) => (
+                  {GALLERY_SLUGS.map((slug) => (
                     <Link
-                      key={g.slug}
-                      href={`/gallery/${g.slug}`}
+                      key={slug}
+                      href={`/gallery/${slug}`}
                       onClick={() => setOpen(false)}
                       className="block px-5 py-3 text-sm hover:bg-mist/40 hover:text-olive transition-colors duration-200"
                     >
-                      {g.label}
+                      {labels[slug]}
                     </Link>
                   ))}
                 </div>
@@ -105,9 +109,9 @@ export default function Header({
         <nav className="md:hidden border-t border-mist bg-bone px-6 py-6 flex flex-col gap-5 animate-[fadeIn_.2s_ease-out]">
           <p className="eyebrow text-stone">גלריות</p>
           <div className="flex flex-col gap-4 ps-3">
-            {GALLERIES.map((g) => (
-              <Link key={g.slug} href={`/gallery/${g.slug}`} onClick={() => setMobileOpen(false)} className="text-sm">
-                {g.label}
+            {GALLERY_SLUGS.map((slug) => (
+              <Link key={slug} href={`/gallery/${slug}`} onClick={() => setMobileOpen(false)} className="text-sm">
+                {labels[slug]}
               </Link>
             ))}
           </div>

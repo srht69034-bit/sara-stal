@@ -19,7 +19,6 @@ export async function getAlbums(): Promise<Album[]> {
     const { data, error } = await supabase
       .from("albums")
       .select("id, title, description, cover_url")
-      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
 
     if (error || !data) return [];

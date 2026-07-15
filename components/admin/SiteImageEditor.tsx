@@ -24,12 +24,14 @@ const pathKey = (key: string) => key.replace("_url", "_path");
 export default function SiteImageEditor({ initialContent }: { initialContent: ContentMap }) {
   const [values, setValues] = useState<ContentMap>(initialContent);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const supabase = createClient();
 
   async function handleUpload(key: string, e: React.ChangeEvent<HTMLInputElement>) {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
     setUploadingKey(key);
+    setErrors((er) => ({ ...er, [key]: "" }));
 
     let file: File = rawFile;
     try {
@@ -48,7 +50,9 @@ export default function SiteImageEditor({ initialContent }: { initialContent: Co
       .from("gallery")
       .upload(path, file, { cacheControl: "3600", upsert: true });
 
-    if (!uploadError) {
+    if (uploadError) {
+      setErrors((er) => ({ ...er, [key]: `שגיאה בהעלאה: ${uploadError.message}` }));
+    } else {
       const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
 
       // מוחקים את הקובץ הישן מה-Storage (אם קיים) לפני עדכון הרשומה
@@ -57,11 +61,15 @@ export default function SiteImageEditor({ initialContent }: { initialContent: Co
         await supabase.storage.from("gallery").remove([oldPath]);
       }
 
-      await supabase.from("site_content").upsert([
+      const { error: saveError } = await supabase.from("site_content").upsert([
         { key, value: publicUrl.publicUrl },
         { key: pathKey(key), value: path },
       ]);
-      setValues({ ...values, [key]: publicUrl.publicUrl, [pathKey(key)]: path });
+      if (saveError) {
+        setErrors((er) => ({ ...er, [key]: `שגיאה בשמירה: ${saveError.message}` }));
+      } else {
+        setValues({ ...values, [key]: publicUrl.publicUrl, [pathKey(key)]: path });
+      }
     }
 
     setUploadingKey(null);
@@ -89,6 +97,7 @@ export default function SiteImageEditor({ initialContent }: { initialContent: Co
               onChange={(e) => handleUpload(f.key, e)}
             />
           </label>
+          {errors[f.key] && <p className="text-xs text-rust">{errors[f.key]}</p>}
         </div>
       ))}
     </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import imageCompression from "browser-image-compression";
+import { safeFileName } from "@/lib/sanitize";
 
 type Album = { id: string; title: string; description: string; cover_url: string; cover_path: string };
 type AlbumImg = { id: string; url: string; path: string; alt: string };
@@ -27,13 +28,14 @@ export default function AlbumManager() {
   const [creating, setCreating] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<Record<string, string>>({});
   const supabase = createClient();
 
   async function loadAlbums() {
     const { data, error } = await supabase
       .from("albums")
       .select("id, title, description, cover_url, cover_path")
-      .order("sort_order", { ascending: true });
+      .order("created_at", { ascending: false });
     if (error) {
       setError(
         error.message.includes("does not exist") || error.code === "42P01"
@@ -71,10 +73,11 @@ export default function AlbumManager() {
   }
 
   async function updateAlbum(album: Album) {
-    await supabase
+    const { error } = await supabase
       .from("albums")
       .update({ title: album.title, description: album.description })
       .eq("id", album.id);
+    setRowError((e) => ({ ...e, [album.id]: error ? `שגיאה בשמירה: ${error.message}` : "" }));
   }
 
   async function deleteAlbum(album: Album) {
@@ -90,7 +93,11 @@ export default function AlbumManager() {
     if (paths.length > 0) {
       await supabase.storage.from("gallery").remove(paths);
     }
-    await supabase.from("albums").delete().eq("id", album.id);
+    const { error } = await supabase.from("albums").delete().eq("id", album.id);
+    if (error) {
+      setRowError((e) => ({ ...e, [album.id]: `שגיאה במחיקה: ${error.message}` }));
+      return;
+    }
     await loadAlbums();
   }
 
@@ -98,18 +105,25 @@ export default function AlbumManager() {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
     const file = await compress(rawFile);
-    const path = `albums/${album.id}/cover-${Date.now()}.jpg`;
+    const path = `albums/${album.id}/${safeFileName(rawFile.name)}`;
     const { error } = await supabase.storage.from("gallery").upload(path, file, { upsert: true });
-    if (!error) {
-      const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
-      // מוחקת את תמונת השער הקודמת מה-Storage כדי לא להשאיר קבצים יתומים
-      if (album.cover_path) await supabase.storage.from("gallery").remove([album.cover_path]);
-      await supabase
-        .from("albums")
-        .update({ cover_url: publicUrl.publicUrl, cover_path: path })
-        .eq("id", album.id);
-      await loadAlbums();
+    if (error) {
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בהעלאת תמונת שער: ${error.message}` }));
+      return;
     }
+    const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
+    // מוחקת את תמונת השער הקודמת מה-Storage כדי לא להשאיר קבצים יתומים
+    if (album.cover_path) await supabase.storage.from("gallery").remove([album.cover_path]);
+    const { error: updateError } = await supabase
+      .from("albums")
+      .update({ cover_url: publicUrl.publicUrl, cover_path: path })
+      .eq("id", album.id);
+    if (updateError) {
+      setRowError((er) => ({ ...er, [album.id]: `שגיאה בשמירת שער: ${updateError.message}` }));
+      return;
+    }
+    setRowError((er) => ({ ...er, [album.id]: "" }));
+    await loadAlbums();
   }
 
   return (
@@ -190,6 +204,8 @@ export default function AlbumManager() {
               </div>
             </div>
 
+            {rowError[album.id] && <p className="text-xs text-rust px-4 pb-3">{rowError[album.id]}</p>}
+
             <button
               onClick={() => setExpanded(expanded === album.id ? null : album.id)}
               className="w-full text-xs text-stone border-t border-mist py-2.5 hover:text-ink transition-colors"
@@ -210,14 +226,19 @@ function AlbumImages({ albumId }: { albumId: string }) {
   const [images, setImages] = useState<AlbumImg[]>([]);
   const [uploaded, setUploaded] = useState(0);
   const [total, setTotal] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function load() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("album_images")
       .select("id, url, path, alt")
       .eq("album_id", albumId)
       .order("sort_order", { ascending: true });
+    if (error) {
+      setError(`שגיאה בטעינת תמונות: ${error.message}`);
+      return;
+    }
     setImages((data as AlbumImg[]) ?? []);
   }
 
@@ -231,30 +252,42 @@ function AlbumImages({ albumId }: { albumId: string }) {
     if (files.length === 0) return;
     setTotal(files.length);
     setUploaded(0);
+    setError(null);
+    const failures: string[] = [];
 
     for (const rawFile of files) {
       const file = await compress(rawFile);
-      const path = `albums/${albumId}/${Date.now()}-${rawFile.name}`;
-      const { error } = await supabase.storage.from("gallery").upload(path, file, { upsert: false });
-      if (!error) {
+      // שם קובץ בטוח (ASCII) - שם מקורי בעברית/עם רווחים היה גורם לשגיאת העלאה
+      const path = `albums/${albumId}/${safeFileName(rawFile.name)}`;
+      const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file, { upsert: false });
+      if (uploadError) {
+        failures.push(`${rawFile.name}: ${uploadError.message}`);
+      } else {
         const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
-        await supabase.from("album_images").insert({
+        const { error: insertError } = await supabase.from("album_images").insert({
           album_id: albumId,
           path,
           url: publicUrl.publicUrl,
           alt: rawFile.name,
         });
+        if (insertError) failures.push(`${rawFile.name}: ${insertError.message}`);
       }
       setUploaded((n) => n + 1);
     }
 
     setTotal(0);
+    if (failures.length > 0) setError(`נכשלו ${failures.length} תמונות: ${failures.join(" · ")}`);
     await load();
   }
 
   async function handleDelete(img: AlbumImg) {
-    await supabase.storage.from("gallery").remove([img.path]);
-    await supabase.from("album_images").delete().eq("id", img.id);
+    const { error: storageError } = await supabase.storage.from("gallery").remove([img.path]);
+    const { error: dbError } = await supabase.from("album_images").delete().eq("id", img.id);
+    if (storageError || dbError) {
+      setError(`שגיאה במחיקה: ${(storageError ?? dbError)?.message}`);
+      return;
+    }
+    setError(null);
     await load();
   }
 
@@ -271,6 +304,7 @@ function AlbumImages({ albumId }: { albumId: string }) {
           </span>
         )}
       </div>
+      {error && <p className="text-xs text-rust mb-3">{error}</p>}
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
         {images.map((img) => (
           <div key={img.id} className="relative group aspect-square bg-mist overflow-hidden">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type GalleryImage = {
   id: string;
@@ -26,19 +26,55 @@ function useColumnCount() {
   return columns;
 }
 
-function Tile({ image, onOpen }: { image: GalleryImage; onOpen: () => void }) {
+function Tile({
+  image,
+  onOpen,
+  revealDelay,
+}: {
+  image: GalleryImage;
+  onOpen: () => void;
+  revealDelay: number;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  // אנימציית כניסה מדורגת (fade + rise) כשהאריח נכנס לתצוגה - נותנת
+  // לגלריה תחושה חיה ודינמית במקום שהכל "יופיע" סטטי בבת אחת.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onOpen}
-      className="group relative block w-full overflow-hidden bg-mist text-start"
+      className="group relative block w-full overflow-hidden bg-mist text-start transition-all ease-editorial"
+      style={{
+        opacity: revealed ? 1 : 0,
+        transform: revealed ? "translateY(0)" : "translateY(18px)",
+        transitionDuration: "700ms",
+        transitionDelay: `${revealDelay}ms`,
+      }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={image.url}
         alt={image.alt}
         loading="lazy"
-        className="protected-image block w-full h-auto transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.02]"
+        className="protected-image block w-full h-auto transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.035]"
       />
       <span className="hover-veil" />
     </button>
@@ -93,8 +129,13 @@ export default function MasonryGallery({ images }: { images: GalleryImage[] }) {
       <div className="flex" style={{ gap: GAP_PX }}>
         {columns.map((col, ci) => (
           <div key={ci} className="flex-1 flex flex-col" style={{ gap: GAP_PX }}>
-            {col.map(({ image, index }) => (
-              <Tile key={image.id} image={image} onOpen={() => setLightboxIndex(index)} />
+            {col.map(({ image, index }, rowInCol) => (
+              <Tile
+                key={image.id}
+                image={image}
+                onOpen={() => setLightboxIndex(index)}
+                revealDelay={Math.min(rowInCol, 4) * 90}
+              />
             ))}
           </div>
         ))}

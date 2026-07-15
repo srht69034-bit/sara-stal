@@ -22,11 +22,16 @@ const FIELD_LABELS: Record<string, string> = {
   steps_3_body: "שלב 3 - טקסט",
   steps_4_title: "שלב 4 - כותרת",
   steps_4_body: "שלב 4 - טקסט",
-  gallery_chalakah_label: "תווית גלריה - חאלקה",
-  gallery_newborn_label: "תווית גלריה - ניובורן",
-  gallery_smashcake_label: "תווית גלריה - סמאש קייק",
-  gallery_outdoor_label: "תווית גלריה - חוץ",
-  gallery_studio_label: "תווית גלריה - סטודיו",
+  gallery_chalakah_label: "שם גלריה - חאלקה",
+  gallery_newborn_label: "שם גלריה - ניובורן",
+  gallery_smashcake_label: "שם גלריה - סמאש קייק",
+  gallery_outdoor_label: "שם גלריה - חוץ",
+  gallery_studio_label: "שם גלריה - סטודיו",
+  preview_chalakah_caption: "טקסט מתחת - חאלקה (בעמוד הבית)",
+  preview_newborn_caption: "טקסט מתחת - ניובורן (בעמוד הבית)",
+  preview_smashcake_caption: "טקסט מתחת - סמאש קייק (בעמוד הבית)",
+  preview_outdoor_caption: "טקסט מתחת - חוץ (בעמוד הבית)",
+  preview_studio_caption: "טקסט מתחת - סטודיו (בעמוד הבית)",
   contact_title: "כותרת - יצירת קשר",
   contact_body: "טקסט - יצירת קשר",
   footer_phone: "טלפון (פוטר)",
@@ -38,13 +43,22 @@ const FIELD_LABELS: Record<string, string> = {
 export default function ContentEditor({ initialContent }: { initialContent: ContentMap }) {
   const [values, setValues] = useState<ContentMap>(initialContent);
   const [saving, setSaving] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saved, setSaved] = useState<string | null>(null);
 
   async function saveField(key: string) {
     setSaving(key);
+    setErrors((e) => ({ ...e, [key]: "" }));
     const supabase = createClient();
     // upsert - דורש שהמשתמש מחובר (RLS: authenticated only), ראו supabase/schema.sql
-    await supabase.from("site_content").upsert({ key, value: values[key] });
+    const { error } = await supabase.from("site_content").upsert({ key, value: values[key] });
     setSaving(null);
+    if (error) {
+      setErrors((e) => ({ ...e, [key]: error.message }));
+    } else {
+      setSaved(key);
+      setTimeout(() => setSaved((s) => (s === key ? null : s)), 2000);
+    }
   }
 
   return (
@@ -74,9 +88,10 @@ export default function ContentEditor({ initialContent }: { initialContent: Cont
                 disabled={saving === key}
                 className="text-xs border border-ink px-4 py-3 hover:bg-ink hover:text-bone transition-colors disabled:opacity-50"
               >
-                {saving === key ? "שומר..." : "שמירה"}
+                {saving === key ? "שומר..." : saved === key ? "נשמר ✓" : "שמירה"}
               </button>
             </div>
+            {errors[key] && <p className="text-xs text-rust">שגיאה בשמירה: {errors[key]}</p>}
           </div>
         );
       })}

@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getAlbums } from "@/lib/albums";
 import { getSiteContent } from "@/lib/content";
+import { galleryLabels } from "@/lib/galleries";
 
 /**
  * עמוד האלבומים בכוונה בסגנון שונה מהאתר הראשי: רקע כהה (ink) במקום
@@ -14,7 +15,7 @@ export default async function AlbumsPage() {
 
   return (
     <div className="bg-ink text-bone min-h-screen">
-      <Header siteName={content.site_name} logoUrl={content.logo_image_url} />
+      <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
       <section className="mx-auto max-w-editorial px-8 md:px-10 pt-20 pb-8">
         <p className="eyebrow text-bone/70 mb-4">אלבומי לקוחות</p>

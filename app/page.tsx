@@ -11,16 +11,7 @@ import BackgroundWord from "@/components/BackgroundWord";
 import { getSiteContent } from "@/lib/content";
 import { getTestimonials } from "@/lib/testimonials";
 import { getAlbums } from "@/lib/albums";
-
-// shape קובע את הפרופורציה של האריח בפריסת ה"גלריית אמנות" בעמוד הבית.
-// התמונות עצמן (imageKey) מגיעות מ-site_content וניתנות להחלפה מהדשבורד.
-const PREVIEW_ITEMS = [
-  { slug: "outdoor", labelKey: "gallery_outdoor_label", imageKey: "preview_outdoor_image_url", shape: "landscape" as const },
-  { slug: "chalakah", labelKey: "gallery_chalakah_label", imageKey: "preview_chalakah_image_url", shape: "square" as const },
-  { slug: "studio", labelKey: "gallery_studio_label", imageKey: "preview_studio_image_url", shape: "square" as const },
-  { slug: "newborn", labelKey: "gallery_newborn_label", imageKey: "preview_newborn_image_url", shape: "portrait" as const },
-  { slug: "smash-cake", labelKey: "gallery_smashcake_label", imageKey: "preview_smashcake_image_url", shape: "landscape" as const },
-];
+import { GALLERY_SLUGS, galleryLabels, galleryLabel, galleryCaption, galleryPreviewImage } from "@/lib/galleries";
 
 export default async function HomePage() {
   const [content, testimonials, albums] = await Promise.all([
@@ -29,9 +20,11 @@ export default async function HomePage() {
     getAlbums(),
   ]);
 
+  const shapes = { outdoor: "landscape", chalakah: "square", studio: "square", newborn: "portrait", "smash-cake": "landscape" } as const;
+
   return (
     <>
-      <Header siteName={content.site_name} logoUrl={content.logo_image_url} />
+      <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
       {/* Hero - תמונת רקע אחת גדולה עם תנועה איטית (Ken Burns) וכותרת ממוקמת בטוב טעם */}
       <section className="relative h-[92vh] min-h-[600px] w-full overflow-hidden">
@@ -39,7 +32,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent" />
 
         <div className="relative z-10 flex h-full items-end">
-          <div className="mx-auto w-full max-w-editorial px-6 sm:px-8 md:px-10 pb-16 md:pb-20">
+          <div className="mx-auto w-full max-w-editorial px-6 sm:px-8 md:px-10 pb-24 sm:pb-28 md:pb-32">
             <AnimatedReveal>
               <p className="eyebrow mb-5 text-bone/85">פורטפוליו צילום</p>
               <h1 className="font-display text-bone text-3xl sm:text-4xl md:text-6xl leading-[1.15] max-w-2xl break-words">
@@ -58,23 +51,23 @@ export default async function HomePage() {
         </AnimatedReveal>
         <AnimatedReveal delay={0.1} direction="scale">
           <GalleryPreviewGrid
-            items={PREVIEW_ITEMS.map((p) => ({
-              slug: p.slug,
-              label: content[p.labelKey],
-              imageUrl: content[p.imageKey],
-              shape: p.shape,
+            items={GALLERY_SLUGS.map((slug) => ({
+              slug,
+              label: galleryLabel(content, slug),
+              caption: galleryCaption(content, slug),
+              imageUrl: galleryPreviewImage(content, slug),
+              shape: shapes[slug],
             }))}
           />
         </AnimatedReveal>
       </section>
 
-      {/* About - הועלה גבוה יותר בעמוד */}
+      {/* About */}
       <section
         id="about"
-        className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-12 pb-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center overflow-hidden"
+        className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-12 pb-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center"
       >
-        <BackgroundWord word="Story" align="start" />
-        <AnimatedReveal direction="right" className="relative z-10 order-2 md:order-1">
+        <AnimatedReveal direction="right" className="order-2 md:order-1">
           <div className="aspect-[4/5] bg-mist overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -84,8 +77,10 @@ export default async function HomePage() {
             />
           </div>
         </AnimatedReveal>
-        <div className="relative z-10 order-1 md:order-2">
-          <AnimatedReveal direction="left">
+        {/* המילה השקופה מוגבלת לעמודת הטקסט בלבד, כדי שלא "תיתקע" מעל התמונה */}
+        <div className="relative order-1 md:order-2 overflow-hidden">
+          <BackgroundWord word="Story" align="start" />
+          <AnimatedReveal direction="left" className="relative z-10">
             <p className="eyebrow mb-6">{content.about_title}</p>
             <p className="text-lg leading-relaxed whitespace-pre-line">{content.about_body}</p>
           </AnimatedReveal>
@@ -97,6 +92,11 @@ export default async function HomePage() {
 
       {/* Booking steps - שלבי ההזמנה */}
       <BookingSteps content={content} />
+
+      {/* מפריד עדין בין שלבי ההזמנה להמלצות */}
+      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10">
+        <div className="h-px bg-mist" />
+      </div>
 
       {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}
       <section className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20 overflow-hidden">

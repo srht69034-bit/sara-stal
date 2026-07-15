@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import imageCompression from "browser-image-compression";
+import { safeFileName } from "@/lib/sanitize";
 
 const CATEGORIES = [
   { slug: "chalakah", label: "חאלקה" },
@@ -48,15 +49,20 @@ function CategoryBlock({ slug, label }: { slug: string; label: string }) {
   const [total, setTotal] = useState(0);
   const [bannerUrl, setBannerUrl] = useState<string>("");
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   async function load() {
-    const { data } = await supabase
+    const { data, error: loadError } = await supabase
       .from("gallery_images")
       .select("id, url, path, alt")
       .eq("category", slug)
       .order("created_at", { ascending: false });
-    setImages((data as ImageRow[]) ?? []);
+    if (loadError) {
+      setError(`שגיאה בטעינת תמונות: ${loadError.message}`);
+    } else {
+      setImages((data as ImageRow[]) ?? []);
+    }
 
     const { data: banner } = await supabase
       .from("site_content")
@@ -76,36 +82,49 @@ function CategoryBlock({ slug, label }: { slug: string; label: string }) {
     if (files.length === 0) return;
     setTotal(files.length);
     setUploaded(0);
+    setError(null);
+    const failures: string[] = [];
 
     for (const rawFile of files) {
       const file = await compress(rawFile);
-      const path = `${slug}/${Date.now()}-${rawFile.name}`;
-      const { error } = await supabase.storage.from("gallery").upload(path, file, {
+      // שם קובץ בטוח (ASCII) - שם מקורי בעברית/עם רווחים היה גורם לשגיאת העלאה
+      const path = `${slug}/${safeFileName(rawFile.name)}`;
+      const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file, {
         cacheControl: "3600",
         upsert: false,
       });
-      if (!error) {
+      if (uploadError) {
+        failures.push(`${rawFile.name}: ${uploadError.message}`);
+      } else {
         const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
-        await supabase.from("gallery_images").insert({
+        const { error: insertError } = await supabase.from("gallery_images").insert({
           category: slug,
           path,
           url: publicUrl.publicUrl,
           alt: rawFile.name,
         });
+        if (insertError) failures.push(`${rawFile.name}: ${insertError.message}`);
       }
       setUploaded((n) => n + 1);
     }
 
     setTotal(0);
+    if (failures.length > 0) setError(`נכשלו ${failures.length} תמונות: ${failures.join(" · ")}`);
     await load();
   }
 
   async function handleDelete(image: ImageRow) {
-    await fetch("/api/admin/delete-image", {
+    const res = await fetch("/api/admin/delete-image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: image.id, path: image.path }),
     });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setError(`שגיאה במחיקת תמונה: ${body.error ?? res.statusText}`);
+      return;
+    }
+    setError(null);
     await load();
   }
 
@@ -113,11 +132,14 @@ function CategoryBlock({ slug, label }: { slug: string; label: string }) {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
     setBannerUploading(true);
+    setError(null);
     const file = await compress(rawFile);
-    const path = `banners/${slug}-${Date.now()}.jpg`;
+    const path = `banners/${slug}-${safeFileName(rawFile.name)}`;
 
-    const { error } = await supabase.storage.from("gallery").upload(path, file, { upsert: true });
-    if (!error) {
+    const { error: uploadError } = await supabase.storage.from("gallery").upload(path, file, { upsert: true });
+    if (uploadError) {
+      setError(`שגיאה בהעלאת באנר: ${uploadError.message}`);
+    } else {
       const { data: publicUrl } = supabase.storage.from("gallery").getPublicUrl(path);
 
       // מוחקים את באנר הגלריה הקודם מה-Storage לפני עדכון הרשומה
@@ -130,11 +152,15 @@ function CategoryBlock({ slug, label }: { slug: string; label: string }) {
         await supabase.storage.from("gallery").remove([oldPathRow.value]);
       }
 
-      await supabase.from("site_content").upsert([
+      const { error: saveError } = await supabase.from("site_content").upsert([
         { key: `gallery_banner_${slug}_url`, value: publicUrl.publicUrl },
         { key: `gallery_banner_${slug}_path`, value: path },
       ]);
-      setBannerUrl(publicUrl.publicUrl);
+      if (saveError) {
+        setError(`שגיאה בשמירת באנר: ${saveError.message}`);
+      } else {
+        setBannerUrl(publicUrl.publicUrl);
+      }
     }
     setBannerUploading(false);
   }
@@ -172,6 +198,8 @@ function CategoryBlock({ slug, label }: { slug: string; label: string }) {
           </label>
         </div>
       </div>
+
+      {error && <p className="text-xs text-rust mb-4">{error}</p>}
 
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
         {images.map((img) => (

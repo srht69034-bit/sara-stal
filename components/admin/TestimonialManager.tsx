@@ -54,15 +54,22 @@ export default function TestimonialManager() {
     await load();
   }
 
+  const [rowError, setRowError] = useState<Record<string, string>>({});
+
   async function updateRow(row: Row) {
-    await supabase
+    const { error } = await supabase
       .from("testimonials")
       .update({ quote: row.quote, author: row.author })
       .eq("id", row.id);
+    setRowError((e) => ({ ...e, [row.id]: error ? `שגיאה בשמירה: ${error.message}` : "" }));
   }
 
   async function deleteRow(id: string) {
-    await supabase.from("testimonials").delete().eq("id", id);
+    const { error } = await supabase.from("testimonials").delete().eq("id", id);
+    if (error) {
+      setRowError((e) => ({ ...e, [id]: `שגיאה במחיקה: ${error.message}` }));
+      return;
+    }
     await load();
   }
 
@@ -129,6 +136,7 @@ export default function TestimonialManager() {
                 מחיקה
               </button>
             </div>
+            {rowError[row.id] && <p className="text-xs text-rust">{rowError[row.id]}</p>}
           </div>
         ))}
         {rows.length === 0 && <p className="text-sm text-stone">אין עדיין המלצות שמורות.</p>}

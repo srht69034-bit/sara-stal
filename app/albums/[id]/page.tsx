@@ -1,19 +1,26 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AlbumViewer from "@/components/AlbumViewer";
-import { getAlbum, getAlbumImages } from "@/lib/albums";
+import { getAlbum, getAlbumImages, getAlbums } from "@/lib/albums";
 import { getSiteContent } from "@/lib/content";
+import { galleryLabels } from "@/lib/galleries";
 
 export default async function AlbumPage({ params }: { params: { id: string } }) {
-  const [album, content] = await Promise.all([getAlbum(params.id), getSiteContent()]);
+  const [album, content, allAlbums] = await Promise.all([
+    getAlbum(params.id),
+    getSiteContent(),
+    getAlbums(),
+  ]);
   if (!album) notFound();
 
   const images = await getAlbumImages(album.id);
+  const otherAlbums = allAlbums.filter((a) => a.id !== album.id).slice(0, 4);
 
   return (
     <div className="bg-ink text-bone min-h-screen">
-      <Header siteName={content.site_name} logoUrl={content.logo_image_url} />
+      <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
       {/* תמונה ראשית לאלבום - תמונת השער שהוגדרה לו בדשבורד */}
       {album.cover_url && (
@@ -39,6 +46,32 @@ export default async function AlbumPage({ params }: { params: { id: string } }) 
       <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pb-24">
         <AlbumViewer images={images} />
       </section>
+
+      {/* אלבומים נוספים - קישורים מהירים בתחתית עמוד האלבום */}
+      {otherAlbums.length > 0 && (
+        <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pb-24 border-t border-bone/10 pt-16">
+          <p className="eyebrow text-bone/70 mb-8">עוד אלבומים</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {otherAlbums.map((a) => (
+              <Link key={a.id} href={`/albums/${a.id}`} className="group block">
+                <div className="aspect-[4/5] overflow-hidden bg-bone/10">
+                  {a.cover_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={a.cover_url}
+                      alt={a.title}
+                      className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.03]"
+                    />
+                  )}
+                </div>
+                <p className="eyebrow mt-3 text-bone/80 group-hover:text-olive transition-colors duration-300">
+                  {a.title}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="bg-bone text-ink">
         <Footer

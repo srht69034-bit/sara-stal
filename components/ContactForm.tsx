@@ -13,32 +13,54 @@ const SESSION_TYPES = [
   { value: "other", label: "אחר" },
 ];
 
+const SESSION_LABELS: Record<string, string> = Object.fromEntries(
+  SESSION_TYPES.map((s) => [s.value, s.label])
+);
+
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("sending");
+    setErrorMsg(null);
 
     const form = e.currentTarget;
-    const data = {
-      name: (form.elements.namedItem("name") as HTMLInputElement).value,
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
-      sessionType: (form.elements.namedItem("sessionType") as HTMLSelectElement).value,
-      message: (form.elements.namedItem("message") as HTMLTextAreaElement).value,
-    };
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const sessionType = (form.elements.namedItem("sessionType") as HTMLSelectElement).value;
+    const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value;
+
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+    if (!accessKey) {
+      setStatus("error");
+      setErrorMsg("טופס יצירת הקשר עדיין לא מוגדר - חסר NEXT_PUBLIC_WEB3FORMS_KEY בהגדרות הסביבה.");
+      return;
+    }
 
     try {
-      const res = await fetch("/api/contact", {
+      // Web3Forms - שירות פשוט לשליחת טפסים לתיבת מייל, בלי צורך בדומיין
+      // מאומת או שרת משלנו. ה-access_key ציבורי ובטוח לחשיפה בצד לקוח.
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `פנייה חדשה מהאתר - ${name}`,
+          name,
+          email,
+          "סוג צילום": SESSION_LABELS[sessionType] ?? sessionType,
+          message,
+        }),
       });
-      if (!res.ok) throw new Error("send failed");
+      const result = await res.json();
+      if (!result.success) throw new Error(result.message ?? "send failed");
       setStatus("sent");
       form.reset();
-    } catch {
+    } catch (err) {
       setStatus("error");
+      setErrorMsg(err instanceof Error ? err.message : "משהו השתבש, נסו שוב או צרו קשר ישירות במייל.");
     }
   }
 
@@ -82,7 +104,7 @@ export default function ContactForm() {
       </button>
 
       {status === "error" && (
-        <p className="text-sm text-rust">משהו השתבש, נסו שוב או צרו קשר ישירות במייל.</p>
+        <p className="text-sm text-rust">{errorMsg ?? "משהו השתבש, נסו שוב או צרו קשר ישירות במייל."}</p>
       )}
     </form>
   );
