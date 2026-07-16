@@ -67,13 +67,19 @@ export default function ContactForm() {
           await emailjs.send(
             emailjsServiceId,
             emailjsTemplateId,
-            { to_name: name, to_email: email },
+            { to_name: name, to_email: email, email },
             { publicKey: emailjsPublicKey }
           );
-        } catch {
+        } catch (emailjsErr) {
           // המענה האוטומטי הוא "בונוס" - לא מפילים את כל השליחה אם הוא נכשל,
-          // כי ההתראה אלייך (הקריטית) כבר נשלחה בהצלחה למעלה.
+          // כי ההתראה אלייך (הקריטית) כבר נשלחה בהצלחה למעלה. עדיין מדפיסים
+          // ל-console כדי שאפשר יהיה לאבחן דרך DevTools אם משהו משתבש.
+          console.warn("EmailJS auto-reply failed:", emailjsErr);
         }
+      } else {
+        console.warn(
+          "EmailJS auto-reply skipped - missing one of NEXT_PUBLIC_EMAILJS_SERVICE_ID / NEXT_PUBLIC_EMAILJS_TEMPLATE_ID / NEXT_PUBLIC_EMAILJS_PUBLIC_KEY"
+        );
       }
 
       setStatus("sent");
