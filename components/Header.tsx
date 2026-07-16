@@ -26,19 +26,14 @@ export default function Header({
   const labels = galleryLabels ?? FALLBACK_LABELS;
 
   return (
-    <header className="sticky top-0 z-50 bg-bone/75 backdrop-blur-sm border-b border-mist">
-      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-5 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={siteName} className="h-9 w-auto object-contain" />
-          ) : (
-            <span className="font-display text-lg tracking-wide text-ink">{siteName}</span>
-          )}
-        </Link>
-
-        {/* ניווט דסקטופ - שקט ומינימלי, בלי כפתור מודגש ובלי אנימציית קו רועשת */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
+    <header className="sticky top-0 z-50 bg-bone/70 backdrop-blur-sm border-b border-mist">
+      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-3.5 flex items-center justify-between">
+        {/*
+          סדר הפוך מקודם: הניווט קודם ב-DOM (עם justify-between ו-RTL
+          הוא יושב בצד ימין), הלוגו אחריו (יושב בצד שמאל) - בדיוק כמו
+          שביקשת: קישורים מימין, לוגו משמאל.
+        */}
+        <nav className="hidden md:flex items-center gap-7 text-sm">
           {/*
             ה"גשר" הבא (pt-3 בתוך אלמנט שמתחיל מיד ב-top-full, בלי מרווח
             חיצוני) מבטיח שהעכבר לא "יוצא" מאזור ה-hover בזמן המעבר בין
@@ -64,7 +59,7 @@ export default function Header({
             </button>
 
             {open && (
-              <div className="absolute end-0 top-full w-56 pt-3">
+              <div className="absolute start-0 top-full w-56 pt-3">
                 <div className="bg-bone border border-mist shadow-[0_12px_28px_-12px_rgba(61,58,54,0.18)] animate-[fadeIn_.2s_ease-out]">
                   {GALLERY_SLUGS.map((slug) => (
                     <Link
@@ -91,6 +86,15 @@ export default function Header({
             יצירת קשר
           </Link>
         </nav>
+
+        <Link href="/" className="flex items-center gap-3">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={siteName} className="h-8 w-auto object-contain" />
+          ) : (
+            <span className="font-display text-base tracking-wide text-ink">{siteName}</span>
+          )}
+        </Link>
 
         {/* כפתור המבורגר - מובייל/טאבלט בלבד */}
         <button

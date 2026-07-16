@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import type { AlbumImage } from "@/lib/albums";
 
 export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
@@ -26,21 +27,26 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
   }
 
   return (
-    <div>
-      <div className="relative aspect-[3/2] md:aspect-[16/9] bg-bone/5 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+    // בדסקטופ: פס התמונות הממוזערות בצד (לא מתחת) - flex-row-reverse כדי
+    // שיישב מימין בעמוד RTL. במובייל חוזר לפריסה אנכית (תמונה למעלה, פס למטה).
+    <div className="flex flex-col md:flex-row-reverse gap-4">
+      <div className="relative flex-1 aspect-[3/2] md:aspect-[16/10] bg-bone/5 overflow-hidden">
+        <Image
           key={images[index].id}
           src={images[index].url}
           alt={images[index].alt}
-          className="protected-image h-full w-full object-contain animate-[fadeIn_.4s_ease-out]"
+          fill
+          sizes="(max-width: 1024px) 100vw, 1200px"
+          priority
+          className="protected-image object-contain animate-[fadeIn_.4s_ease-out]"
         />
 
+        {/* חצים בולטים יותר - עיגול עם רקע כהה למראה ברור, לא רק טקסט דהוי */}
         <button
           type="button"
           onClick={prev}
           aria-label="הקודם"
-          className="absolute start-3 top-1/2 -translate-y-1/2 text-bone/70 hover:text-bone text-4xl leading-none transition-colors"
+          className="absolute start-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-ink/50 hover:bg-ink/75 text-bone flex items-center justify-center text-2xl leading-none transition-colors"
         >
           ‹
         </button>
@@ -48,27 +54,26 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
           type="button"
           onClick={next}
           aria-label="הבא"
-          className="absolute end-3 top-1/2 -translate-y-1/2 text-bone/70 hover:text-bone text-4xl leading-none transition-colors"
+          className="absolute end-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-ink/50 hover:bg-ink/75 text-bone flex items-center justify-center text-2xl leading-none transition-colors"
         >
           ›
         </button>
 
-        <span className="eyebrow absolute bottom-4 start-4 text-bone/60">
+        <span className="eyebrow absolute bottom-4 start-4 text-bone/70">
           {index + 1} / {images.length}
         </span>
       </div>
 
-      <div className="flex gap-2.5 mt-6 overflow-x-auto pb-2">
+      <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto md:max-h-[520px] pb-2 md:pb-0 md:w-24">
         {images.map((img, i) => (
           <button
             key={img.id}
             onClick={() => setIndex(i)}
-            className={`shrink-0 w-20 h-20 overflow-hidden transition-opacity ${
+            className={`relative shrink-0 w-20 h-20 overflow-hidden transition-opacity ${
               i === index ? "opacity-100 ring-1 ring-olive" : "opacity-50 hover:opacity-80"
             }`}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.url} alt={img.alt} className="h-full w-full object-cover" />
+            <Image src={img.url} alt={img.alt} fill sizes="80px" className="object-cover" />
           </button>
         ))}
       </div>

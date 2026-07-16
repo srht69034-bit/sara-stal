@@ -1,31 +1,29 @@
 import Link from "next/link";
-
-type Shape = "square" | "portrait" | "landscape";
+import Image from "next/image";
 
 type PreviewItem = {
   slug: string;
   label: string;
   caption?: string;
   imageUrl: string;
-  shape: Shape;
-};
-
-const ASPECT: Record<Shape, string> = {
-  square: "aspect-square",
-  portrait: "aspect-[3/4]",
-  landscape: "aspect-[4/3]",
 };
 
 function Tile({ item }: { item: PreviewItem }) {
   return (
-    <Link href={`/gallery/${item.slug}`} className="group block">
-      <div className={`relative overflow-hidden bg-mist ${ASPECT[item.shape]}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+    <Link href={`/gallery/${item.slug}`} className="group block relative">
+      {/*
+        יחס גובה-רוחב אחיד לכל האריחים (4/5) - זה מה שהופך את השורה
+        לסימטרית ומסודרת; הגיוון עובר עכשיו ל-hover: העלייה קלה בגודל
+        + z-10 גורמים לאריח שמרחפים מעליו "לצוף מעל" את השכנים שלו,
+        תחושת קולאז' עדינה בלי לשבור את הסדר הבסיסי.
+      */}
+      <div className="relative overflow-hidden bg-mist aspect-[4/5] transition-transform duration-500 ease-editorial group-hover:scale-[1.06] group-hover:z-10 group-hover:shadow-[0_18px_34px_-14px_rgba(61,58,54,0.35)]">
+        <Image
           src={item.imageUrl}
           alt={item.label}
-          className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.04]"
-          loading="lazy"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          className="protected-image object-cover"
         />
         <span className="hover-veil" />
       </div>
@@ -41,9 +39,9 @@ function Tile({ item }: { item: PreviewItem }) {
 }
 
 /**
- * פריסה קומפקטית וסימטרית: כל האריחים באותו רוחב עמודה (grid אחיד,
- * ללא col-span שיוצר "שורה חסרה" ורווחים לא אחידים) - תמהיל הצורות
- * נוצר רק דרך aspect-ratio שונה לכל אריח, לא דרך שינוי רוחב.
+ * פריסה סימטרית לגמרי - כל האריחים באותו יחס גובה-רוחב, אז השורה
+ * תמיד מיושרת ונקייה. הרפרוף (hover) הוא מה שיוצר עכשיו את תחושת
+ * הדינמיות/קולאז' - אריח גדל מעט ו"צף" מעל השכנים שלו.
  */
 export default function GalleryPreviewGrid({ items }: { items: PreviewItem[] }) {
   return (

@@ -85,6 +85,19 @@
   .animate-hero-pan {
     animation: heroPan 22s ease-in-out infinite alternate;
   }
+
+  /*
+    גובה ה-Hero: כותבים את הגובה פעמיים - קודם עם vh (גיבוי לדפדפנים
+    ישנים), ואז עם dvh (Dynamic Viewport Height). דפדפן שלא מכיר dvh
+    פשוט מתעלם מהשורה השנייה ונשאר עם vh; דפדפן שכן מכיר (רוב
+    הדפדפנים במובייל כיום) יישם את dvh, שמחשב את הגובה נכון גם כששורת
+    הכתובת של הדפדפן מתכווצת/מתרחבת - זה מה שמנע את "החיתוך" בתחתית
+    התמונה הראשית במובייל.
+  */
+  .hero-height {
+    height: 92vh;
+    height: 92dvh;
+  }
 }
 
 @keyframes heroPan {

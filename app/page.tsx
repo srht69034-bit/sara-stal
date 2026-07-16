@@ -28,13 +28,11 @@ export default async function HomePage() {
 
       {/* Hero - תמונת רקע אחת גדולה עם תנועה איטית (Ken Burns) וכותרת ממוקמת בטוב טעם */}
       {/*
-        h-[92dvh] (dynamic viewport height) עדיף על h-[92vh] רגיל -
-        בדפדפני מובייל (בעיקר iOS Safari) שורת הכתובת המתכווצת/מתרחבת
-        גורמת ל-vh רגיל לחשב גובה שגוי, מה שגורם לתמונה להיראות
-        "חתוכה" בתחתית. supports-* מוודא נפילה חזרה בטוחה לדפדפנים
-        ישנים שלא תומכים ב-dvh.
+        hero-height (מוגדר ב-globals.css) - כותב את הגובה פעמיים
+        (vh ואז dvh) כדי שדפדפני מובייל יחשבו את הגובה נכון גם כששורת
+        הכתובת מתכווצת/מתרחבת, ולא "יחתכו" את התמונה בתחתית.
       */}
-      <section className="relative h-[92vh] supports-[height:100dvh]:h-[92dvh] min-h-[600px] w-full overflow-hidden">
+      <section className="relative hero-height min-h-[600px] w-full overflow-hidden">
         <HeroImage src={content.hero_image_url} alt="תמונת נושא" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent" />
 
@@ -100,18 +98,16 @@ export default async function HomePage() {
       {/* Booking steps - שלבי ההזמנה */}
       <BookingSteps content={content} />
 
-      {/* מפריד עדין בין שלבי ההזמנה להמלצות */}
-      <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-6">
-        <div className="h-px bg-ink/10" />
-      </div>
-
       {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}
-      <section className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20 overflow-hidden">
-        <BackgroundWord word="Moments" align="center" />
-        <div className="relative z-10">
-          <AnimatedReveal direction="scale">
-            <TestimonialCarousel items={testimonials} />
-          </AnimatedReveal>
+      {/* רקע עדין (mist) במקום קו מפריד - הגבול בין הסקשנים נקרא דרך הצבע ולא דרך קו */}
+      <section className="relative bg-mist/40 overflow-hidden">
+        <div className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20">
+          <BackgroundWord word="Moments" align="center" />
+          <div className="relative z-10">
+            <AnimatedReveal direction="scale">
+              <TestimonialCarousel items={testimonials} />
+            </AnimatedReveal>
+          </div>
         </div>
       </section>
 

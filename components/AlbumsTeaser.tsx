@@ -29,15 +29,22 @@ export default function AlbumsTeaser({ albums, content }: { albums: Album[]; con
           <div className="grid grid-cols-3 gap-3">
             {preview.length > 0
               ? preview.map((a) => (
-                  <Link key={a.id} href={`/albums/${a.id}`} className="group aspect-[3/4] overflow-hidden bg-bone/10 block">
-                    {a.cover_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={a.cover_url}
-                        alt={a.title}
-                        className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.03]"
-                      />
-                    )}
+                  <Link key={a.id} href={`/albums/${a.id}`} className="group block">
+                    <div className="relative aspect-[3/4] overflow-hidden bg-bone/10">
+                      {a.cover_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={a.cover_url}
+                          alt={a.title}
+                          className="protected-image h-full w-full object-cover transition-transform duration-[1400ms] ease-editorial group-hover:scale-[1.03]"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent" />
+                      <span className="absolute inset-x-0 bottom-0 p-3">
+                        <span className="block text-[10px] tracking-widest2 uppercase text-bone/60">אלבום</span>
+                        <span className="block text-sm text-bone mt-0.5 truncate">{a.title}</span>
+                      </span>
+                    </div>
                   </Link>
                 ))
               : Array.from({ length: 3 }).map((_, i) => (

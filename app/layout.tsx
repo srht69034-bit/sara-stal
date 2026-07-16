@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Frank_Ruhl_Libre, Assistant } from "next/font/google";
+import { Noto_Serif_Hebrew, Assistant } from "next/font/google";
 import "./globals.css";
 import NoRightClick from "@/components/NoRightClick";
 
-const display = Frank_Ruhl_Libre({
+const display = Noto_Serif_Hebrew({
   subsets: ["hebrew", "latin"],
   weight: ["400", "500"],
   variable: "--font-display",
