@@ -96,13 +96,17 @@ export default async function HomePage() {
       <AlbumsTeaser albums={albums} content={content} />
 
       {/* Booking steps - שלבי ההזמנה */}
-      <BookingSteps content={content} />
+      <div className="pb-10">
+        <BookingSteps content={content} />
+      </div>
 
       {/* Testimonials - קרוסלה מתחלפת, המלצות ניתנות לניהול מהדשבורד */}
-      {/* רקע עדין (mist) במקום קו מפריד - הגבול בין הסקשנים נקרא דרך הצבע ולא דרך קו */}
-      <section className="relative bg-mist/40 overflow-hidden">
+      {/* רקע (mist) מתחיל קצת לפני תחילת ההמלצות, עם ריפוד גדול משני הצדדים
+          כדי שהגבול מהסקשן הקודם יהיה ברור ולא "דבוק" */}
+      <section className="relative bg-mist/40 overflow-hidden pt-6">
         <div className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20">
-          <BackgroundWord word="Moments" align="center" />
+          {/* צבע bone (במקום mist) - כך שהמילה השקופה תיראה נכון על רקע ה-mist הכהה מעט של הסקשן הזה */}
+          <BackgroundWord word="Moments" align="center" tone="bone" />
           <div className="relative z-10">
             <AnimatedReveal direction="scale">
               <TestimonialCarousel items={testimonials} />

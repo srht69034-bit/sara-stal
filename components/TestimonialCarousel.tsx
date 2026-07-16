@@ -1,31 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Testimonial } from "@/lib/testimonials";
 
 export default function TestimonialCarousel({ items }: { items: Testimonial[] }) {
   const [index, setIndex] = useState(0);
 
+  const prev = useCallback(
+    () => setIndex((i) => (i - 1 + items.length) % items.length),
+    [items.length]
+  );
+  const next = useCallback(() => setIndex((i) => (i + 1) % items.length), [items.length]);
+
   useEffect(() => {
     if (items.length <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % items.length), 6000);
+    const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [items.length]);
+  }, [items.length, next]);
 
   if (items.length === 0) return null;
   const current = items[index];
 
   return (
-    <div className="max-w-2xl mx-auto text-center">
-      <blockquote key={current.id} className="animate-[fadeIn_.6s_ease-out]">
-        <p className="font-display italic text-2xl md:text-3xl leading-snug text-ink whitespace-pre-line">
-          “{current.quote}”
-        </p>
-        <footer className="eyebrow mt-6 not-italic">{current.author}</footer>
-      </blockquote>
+    // min-height קבוע (לא תלוי באורך הטקסט) - כך כל המלצה תופסת בדיוק
+    // את אותו שטח, ולא "קופצת" בגודל בין המלצה קצרה לארוכה.
+    <div className="max-w-2xl mx-auto text-center flex items-center justify-center gap-4">
+      {items.length > 1 && (
+        <button
+          onClick={prev}
+          aria-label="ההמלצה הקודמת"
+          className="shrink-0 w-7 h-7 rounded-full border border-mist text-stone hover:border-olive hover:text-olive transition-colors flex items-center justify-center text-sm"
+        >
+          ‹
+        </button>
+      )}
+
+      <div className="min-h-[180px] md:min-h-[160px] flex items-center justify-center flex-1">
+        <blockquote key={current.id} className="animate-[fadeIn_.6s_ease-out]">
+          <p className="font-display text-xl md:text-2xl leading-snug text-ink/90 whitespace-pre-line">
+            “{current.quote}”
+          </p>
+          <footer className="eyebrow mt-6">{current.author}</footer>
+        </blockquote>
+      </div>
 
       {items.length > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8">
+        <button
+          onClick={next}
+          aria-label="ההמלצה הבאה"
+          className="shrink-0 w-7 h-7 rounded-full border border-mist text-stone hover:border-olive hover:text-olive transition-colors flex items-center justify-center text-sm"
+        >
+          ›
+        </button>
+      )}
+
+      {items.length > 1 && (
+        <div className="absolute inset-x-0 flex items-center justify-center gap-2 mt-[100px] md:mt-[90px]">
           {items.map((t, i) => (
             <button
               key={t.id}
