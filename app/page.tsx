@@ -27,7 +27,14 @@ export default async function HomePage() {
       <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
       {/* Hero - תמונת רקע אחת גדולה עם תנועה איטית (Ken Burns) וכותרת ממוקמת בטוב טעם */}
-      <section className="relative h-[92vh] min-h-[600px] w-full overflow-hidden">
+      {/*
+        h-[92dvh] (dynamic viewport height) עדיף על h-[92vh] רגיל -
+        בדפדפני מובייל (בעיקר iOS Safari) שורת הכתובת המתכווצת/מתרחבת
+        גורמת ל-vh רגיל לחשב גובה שגוי, מה שגורם לתמונה להיראות
+        "חתוכה" בתחתית. supports-* מוודא נפילה חזרה בטוחה לדפדפנים
+        ישנים שלא תומכים ב-dvh.
+      */}
+      <section className="relative h-[92vh] supports-[height:100dvh]:h-[92dvh] min-h-[600px] w-full overflow-hidden">
         <HeroImage src={content.hero_image_url} alt="תמונת נושא" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent" />
 

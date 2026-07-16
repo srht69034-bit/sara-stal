@@ -26,7 +26,7 @@ export default function Header({
   const labels = galleryLabels ?? FALLBACK_LABELS;
 
   return (
-    <header className="sticky top-0 z-50 bg-bone/90 backdrop-blur-sm border-b border-mist">
+    <header className="sticky top-0 z-50 bg-bone/75 backdrop-blur-sm border-b border-mist">
       <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           {logoUrl ? (
