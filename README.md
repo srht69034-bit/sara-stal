@@ -16,7 +16,7 @@ app/                    עמודים (App Router)
 components/             קומפוננטות UI
 lib/supabase/           קליינטים ל-Supabase (client/server/admin)
 lib/content.ts          שליפת טקסטים + ברירות מחדל
-supabase/schema.sql     סכימת מסד הנתונים - להריץ פעם אחת ב-Supabase
+supabase/schema.sql      סכימת מסד הנתונים - להריץ פעם אחת ב-Supabase
 ```
 
 ## הרצה מקומית
