@@ -86,6 +86,15 @@
     animation: heroPan 22s ease-in-out infinite alternate;
   }
 
+  /* מסתיר את הפס האפור המובנה של הדפדפן על אזור גלילה, בלי לבטל את הגלילה עצמה */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /*
     גובה ה-Hero: כותבים את הגובה פעמיים - קודם עם vh (גיבוי לדפדפנים
     ישנים), ואז עם dvh (Dynamic Viewport Height). דפדפן שלא מכיר dvh

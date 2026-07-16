@@ -27,9 +27,10 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
   }
 
   return (
-    // בדסקטופ: פס התמונות הממוזערות בצד (לא מתחת) - flex-row-reverse כדי
-    // שיישב מימין בעמוד RTL. במובייל חוזר לפריסה אנכית (תמונה למעלה, פס למטה).
-    <div className="flex flex-col md:flex-row-reverse gap-4">
+    // בדסקטופ: פס התמונות הממוזערות בצד שמאל (flex-row רגיל - התמונה
+    // הראשית ראשונה ב-DOM כך שבתוך RTL היא יושבת מימין, הפס אחריה
+    // משמאל). במובייל חוזר לפריסה אנכית (תמונה למעלה, פס למטה).
+    <div className="flex flex-col md:flex-row gap-4">
       <div className="relative flex-1 aspect-[3/2] md:aspect-[16/10] bg-bone/5 overflow-hidden">
         <Image
           key={images[index].id}
@@ -64,7 +65,8 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
         </span>
       </div>
 
-      <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto md:max-h-[520px] pb-2 md:pb-0 md:w-24">
+      {/* scrollbar-hide (מוגדר ב-globals.css) - גלילה עדיין עובדת, רק בלי הפס האפור המכוער */}
+      <div className="scrollbar-hide flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto md:max-h-[520px] pb-2 md:pb-0 md:w-24">
         {images.map((img, i) => (
           <button
             key={img.id}

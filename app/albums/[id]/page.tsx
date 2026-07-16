@@ -35,7 +35,7 @@ export default async function AlbumPage({ params }: { params: { id: string } }) 
         </section>
       )}
 
-      <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-16 pb-10">
+      <section className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-16 pb-10 md:pl-24">
         <Link href="/albums" className="eyebrow text-bone/70 hover:text-olive transition-colors duration-300 inline-flex items-center gap-2 mb-8">
           → כל האלבומים
         </Link>
