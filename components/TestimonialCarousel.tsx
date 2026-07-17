@@ -42,7 +42,7 @@ export default function TestimonialCarousel({ items }: { items: Testimonial[] })
             <p className="font-display text-xl md:text-2xl leading-snug text-ink/90 whitespace-pre-line">
               “{current.quote}”
             </p>
-            <footer className="eyebrow mt-6">{current.author}</footer>
+            <footer className="text-sm tracking-wide text-stone mt-6">{current.author}</footer>
           </blockquote>
         </div>
 

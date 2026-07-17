@@ -47,7 +47,7 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
           type="button"
           onClick={prev}
           aria-label="הקודם"
-          className="absolute start-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-ink/50 hover:bg-ink/75 text-bone flex items-center justify-center text-2xl leading-none transition-colors"
+          className="absolute start-3 top-1/2 -translate-y-1/2 text-bone/70 hover:text-bone text-4xl leading-none transition-colors"
         >
           ‹
         </button>
@@ -55,7 +55,7 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
           type="button"
           onClick={next}
           aria-label="הבא"
-          className="absolute end-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-ink/50 hover:bg-ink/75 text-bone flex items-center justify-center text-2xl leading-none transition-colors"
+          className="absolute end-3 top-1/2 -translate-y-1/2 text-bone/70 hover:text-bone text-4xl leading-none transition-colors"
         >
           ›
         </button>

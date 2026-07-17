@@ -118,7 +118,7 @@ export default async function HomePage() {
       </section>
 
       {/* Contact - pt נוסף כדי שלא יידבק לסקשן ההמלצות שלפניו */}
-      <section id="contact" className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-28 pb-32 overflow-hidden">
+      <section id="contact" className="relative mx-auto max-w-editorial px-8 sm:px-10 md:px-12 pt-32 pb-32 overflow-hidden">
         <BackgroundWord word="Connect" align="start" />
         <div className="relative z-10">
           <AnimatedReveal>
