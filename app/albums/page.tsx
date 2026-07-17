@@ -10,6 +10,8 @@ import { galleryLabels } from "@/lib/galleries";
  * שמנת, טקסט בהיר, ושורות מתחלפות (תמונה מימין/משמאל) - נותן תחושה
  * של "ספר קפה" יוקרתי, שונה מהגלריות המאווררות בעמוד הבית.
  */
+export const revalidate = 30;
+
 export default async function AlbumsPage() {
   const [albums, content] = await Promise.all([getAlbums(), getSiteContent()]);
 
@@ -17,7 +19,7 @@ export default async function AlbumsPage() {
     <div className="bg-ink text-bone min-h-screen">
       <Header siteName={content.site_name} logoUrl={content.logo_image_url} galleryLabels={galleryLabels(content)} />
 
-      <section className="mx-auto max-w-editorial px-8 md:px-10 pt-20 pb-12 text-center">
+      <section className="mx-auto max-w-editorial px-8 md:px-10 pt-32 pb-12 text-center">
         <p className="eyebrow text-bone/70 mb-5">אלבומי לקוחות</p>
         <h1 className="font-display text-4xl md:text-5xl tracking-wide max-w-2xl mx-auto leading-relaxed">
           כל סיפור מקבל אלבום משלו

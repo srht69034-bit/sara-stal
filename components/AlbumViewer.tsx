@@ -30,7 +30,7 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
     // בדסקטופ: פס התמונות הממוזערות בצד שמאל (flex-row רגיל - התמונה
     // הראשית ראשונה ב-DOM כך שבתוך RTL היא יושבת מימין, הפס אחריה
     // משמאל). במובייל חוזר לפריסה אנכית (תמונה למעלה, פס למטה).
-    <div className="flex flex-col md:flex-row gap-4">
+    <div className="flex flex-col md:flex-row items-start gap-4">
       <div className="relative flex-1 aspect-[3/2] md:aspect-[16/10] bg-bone/5 overflow-hidden">
         <Image
           key={images[index].id}
@@ -39,7 +39,7 @@ export default function AlbumViewer({ images }: { images: AlbumImage[] }) {
           fill
           sizes="(max-width: 1024px) 100vw, 1200px"
           priority
-          className="protected-image object-contain animate-[fadeIn_.4s_ease-out]"
+          className="protected-image object-contain animate-[albumFade_.6s_cubic-bezier(0.22,1,0.36,1)]"
         />
 
         {/* חצים בולטים יותר - עיגול עם רקע כהה למראה ברור, לא רק טקסט דהוי */}

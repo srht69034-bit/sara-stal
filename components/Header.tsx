@@ -26,7 +26,7 @@ export default function Header({
   const labels = galleryLabels ?? FALLBACK_LABELS;
 
   return (
-    <header className="sticky top-0 z-50 bg-bone/70 backdrop-blur-sm border-b border-mist">
+    <header className="sticky top-0 z-50 bg-bone/85 backdrop-blur-sm border-b border-mist">
       <div className="mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-3.5 flex items-center justify-between">
         {/*
           סדר הפוך מקודם: הניווט קודם ב-DOM (עם justify-between ו-RTL

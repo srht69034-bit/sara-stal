@@ -13,6 +13,8 @@ import { getTestimonials } from "@/lib/testimonials";
 import { getAlbums } from "@/lib/albums";
 import { GALLERY_SLUGS, galleryLabels, galleryLabel, galleryCaption, galleryPreviewImage } from "@/lib/galleries";
 
+export const revalidate = 30;
+
 export default async function HomePage() {
   const [content, testimonials, albums] = await Promise.all([
     getSiteContent(),
@@ -104,7 +106,7 @@ export default async function HomePage() {
       {/* רקע (mist) מתחיל קצת לפני תחילת ההמלצות, עם ריפוד גדול משני הצדדים
           כדי שהגבול מהסקשן הקודם יהיה ברור ולא "דבוק" */}
       <section className="relative bg-mist/40 overflow-hidden pt-6">
-        <div className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 py-20">
+        <div className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-28 pb-20">
           {/* צבע bone (במקום mist) - כך שהמילה השקופה תיראה נכון על רקע ה-mist הכהה מעט של הסקשן הזה */}
           <BackgroundWord word="Moments" align="center" tone="bone" />
           <div className="relative z-10">
@@ -115,8 +117,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Contact */}
-      <section id="contact" className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pb-32 overflow-hidden">
+      {/* Contact - pt נוסף כדי שלא יידבק לסקשן ההמלצות שלפניו */}
+      <section id="contact" className="relative mx-auto max-w-editorial px-6 sm:px-8 md:px-10 pt-28 pb-32 overflow-hidden">
         <BackgroundWord word="Connect" align="start" />
         <div className="relative z-10">
           <AnimatedReveal>
